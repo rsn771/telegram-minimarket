@@ -1,36 +1,221 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Telegram Mini Market
 
-## Getting Started
+App Store для Telegram Mini Apps, созданный с использованием Next.js и Tailwind CSS в стиле Apple Store.
 
-First, run the development server:
+## 🚀 Быстрый старт
+
+### Локальная разработка
 
 ```bash
+# Установка зависимостей
+npm install
+
+# Запуск dev-сервера
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Откройте [http://localhost:3000](http://localhost:3000) в браузере.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Сборка для продакшена
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+# Сборка проекта
+npm run build
 
-## Learn More
+# Запуск продакшен сервера
+npm start
+```
 
-To learn more about Next.js, take a look at the following resources:
+## 📱 Деплой в Telegram Mini App
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Шаг 1: Деплой приложения
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Разверните ваше приложение на любом хостинге, поддерживающем HTTPS:
 
-## Deploy on Vercel
+**Рекомендуемые платформы:**
+- [Vercel](https://vercel.com) (рекомендуется для Next.js)
+- [Netlify](https://netlify.com)
+- [Railway](https://railway.app)
+- [Render](https://render.com)
+- Любой VPS с Nginx/Caddy
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+**Пример деплоя на Vercel:**
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+# Установите Vercel CLI
+npm i -g vercel
+
+# Деплой
+vercel
+```
+
+### Шаг 2: Создание бота в Telegram
+
+1. Откройте [@BotFather](https://t.me/BotFather) в Telegram
+2. Отправьте команду `/newbot`
+3. Следуйте инструкциям для создания бота
+4. Сохраните токен бота
+
+### Шаг 3: Настройка Mini App
+
+1. Отправьте команду `/newapp` боту [@BotFather](https://t.me/BotFather)
+2. Выберите вашего бота из списка
+3. Укажите название приложения
+4. Укажите описание
+5. Загрузите иконку (512x512px, PNG)
+6. **Важно:** Укажите URL вашего приложения (например: `https://your-app.vercel.app`)
+7. Загрузите скриншоты (минимум 2, максимум 5)
+8. Укажите короткое название (до 32 символов)
+
+### Шаг 4: Тестирование
+
+1. Откройте вашего бота в Telegram
+2. Нажмите на кнопку меню (или отправьте команду `/start`)
+3. Выберите ваше Mini App из списка
+4. Приложение должно открыться в Telegram
+
+### Шаг 5: Публикация (опционально)
+
+После тестирования вы можете опубликовать Mini App:
+
+1. Отправьте команду `/publish` боту [@BotFather](https://t.me/BotFather)
+2. Выберите вашего бота
+3. Выберите ваше приложение
+4. Подтвердите публикацию
+
+После публикации ваше приложение будет доступно в каталоге Telegram Mini Apps.
+
+## 🛠 Технологии
+
+- **Next.js 16** - React фреймворк
+- **TypeScript** - Типизация
+- **Tailwind CSS** - Стилизация
+- **Telegram Web App SDK** - Интеграция с Telegram
+- **Lucide React** - Иконки
+
+## 📚 Использование Telegram Web App API
+
+### Базовое использование
+
+```typescript
+import { getTelegramWebApp, isTelegramWebApp } from "@/utils/telegram";
+
+// Проверка, запущено ли приложение в Telegram
+if (isTelegramWebApp()) {
+  const tg = getTelegramWebApp();
+  // Используйте Telegram API
+}
+```
+
+### Примеры использования
+
+```typescript
+import { 
+  hapticFeedback, 
+  showTelegramAlert, 
+  getTelegramUser,
+  useTelegramTheme 
+} from "@/utils/telegram";
+
+// Тактильная обратная связь
+function handleClick() {
+  hapticFeedback("light");
+  // Ваша логика
+}
+
+// Показать алерт
+showTelegramAlert("Привет из Telegram!");
+
+// Получить информацию о пользователе
+const user = getTelegramUser();
+if (user) {
+  console.log(`Привет, ${user.first_name}!`);
+}
+
+// Использовать тему Telegram
+const theme = useTelegramTheme();
+// theme.bgColor, theme.textColor и т.д.
+```
+
+### Основные методы Telegram Web App
+
+```typescript
+const tg = getTelegramWebApp();
+
+// Развернуть на весь экран
+tg?.expand();
+
+// Закрыть приложение
+tg?.close();
+
+// Показать главную кнопку
+tg?.MainButton.setText("Открыть");
+tg?.MainButton.show();
+tg?.MainButton.onClick(() => {
+  // Действие при нажатии
+});
+
+// Показать кнопку "Назад"
+tg?.BackButton.show();
+tg?.BackButton.onClick(() => {
+  // Вернуться назад
+});
+
+// Открыть ссылку
+tg?.openLink("https://example.com");
+
+// Открыть Telegram ссылку
+tg?.openTelegramLink("https://t.me/username");
+```
+
+## 🔒 Безопасность
+
+Приложение настроено с правильными CSP заголовками для работы в Telegram. Все внешние ресурсы должны быть разрешены в `next.config.ts`.
+
+## 📝 Структура проекта
+
+```
+telegram-minimarket/
+├── src/
+│   ├── app/              # Next.js App Router страницы
+│   │   ├── layout.tsx    # Главный layout с Telegram SDK
+│   │   ├── page.tsx      # Главная страница
+│   │   └── globals.css   # Глобальные стили
+│   ├── components/       # React компоненты
+│   │   ├── AppCard.tsx
+│   │   └── TelegramWebApp.tsx
+│   ├── utils/            # Утилиты
+│   │   └── telegram.ts   # Telegram Web App утилиты
+│   └── data/             # Данные
+│       └── apps.ts
+├── public/               # Статические файлы
+├── next.config.ts        # Конфигурация Next.js
+├── tailwind.config.js   # Конфигурация Tailwind
+└── package.json
+```
+
+## 🎨 Стилизация
+
+Приложение использует стили в духе Apple Store:
+- Системные шрифты Apple (`-apple-system`, `SF Pro Display`)
+- Цветовая схема Apple (`#007AFF` для акцентов)
+- Плавные анимации и переходы
+- Адаптивный дизайн для мобильных устройств
+
+## 📖 Документация
+
+- [Telegram Mini Apps Documentation](https://core.telegram.org/bots/webapps)
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Tailwind CSS Documentation](https://tailwindcss.com/docs)
+
+## 🤝 Поддержка
+
+Если у вас возникли вопросы или проблемы:
+1. Проверьте, что ваше приложение доступно по HTTPS
+2. Убедитесь, что URL правильно указан в BotFather
+3. Проверьте консоль браузера на наличие ошибок
+4. Убедитесь, что CSP заголовки настроены правильно
+
+## 📄 Лицензия
+
+MIT
