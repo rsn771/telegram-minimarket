@@ -9,28 +9,8 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  async headers() {
-    return [
-      {
-        source: '/:path*',
-        headers: [
-          {
-            key: 'Content-Security-Policy',
-            value: [
-              "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:",
-              "script-src * 'unsafe-inline' 'unsafe-eval'",
-              "style-src * 'unsafe-inline'",
-              "img-src * data: blob:",
-              "font-src * data:",
-              "connect-src *",
-              "frame-src *",
-              "frame-ancestors *",
-            ].join('; '),
-          },
-        ],
-      },
-    ];
-  },
+  // Убраны CSP заголовки для работы в Telegram Mini App
+  // Telegram требует более гибкую политику безопасности
 };
 
 export default nextConfig;
