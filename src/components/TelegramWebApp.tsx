@@ -130,13 +130,21 @@ export function TelegramWebApp() {
       // Разворачиваем приложение на весь экран
       tg.expand();
       
-      // Настройка цветовой схемы (опционально)
-      // Можно использовать тему Telegram или задать свою
-      tg.setHeaderColor("#ffffff");
-      tg.setBackgroundColor("#ffffff");
-      
-      // Включаем подтверждение закрытия (опционально)
-      tg.enableClosingConfirmation();
+      // Настройка цветовой схемы (если методы доступны)
+      try {
+        if (typeof tg.setHeaderColor === 'function') {
+          tg.setHeaderColor("#ffffff");
+        }
+        if (typeof tg.setBackgroundColor === 'function') {
+          tg.setBackgroundColor("#ffffff");
+        }
+        if (typeof tg.enableClosingConfirmation === 'function') {
+          tg.enableClosingConfirmation();
+        }
+      } catch (error) {
+        // Игнорируем ошибки, если методы не поддерживаются
+        console.log('Some Telegram Web App methods are not available');
+      }
     }
   }, []);
 
