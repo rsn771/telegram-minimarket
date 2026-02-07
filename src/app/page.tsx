@@ -1,12 +1,34 @@
 import { AppCard } from "@/components/AppCard";
 import { APPS } from "@/data/apps";
+import { Search } from "lucide-react";
+import { BottomNav } from "@/components/BottomNav";
 
 export default function Home() {
   return (
     <div className="bg-white min-h-screen pb-24 text-black">
-      <header className="p-5 pt-10">
-        <p className="text-gray-400 text-[13px] font-bold uppercase tracking-tight">4 февраля</p>
+      {/* Строка поиска в самом верху */}
+      <div className="sticky top-0 z-10 bg-white/95 backdrop-blur-md border-b border-gray-100">
+        <div className="px-4 py-3 flex items-center gap-3 bg-[#F2F2F7] rounded-xl mx-4 mt-4 mb-2">
+          <Search size={20} className="text-gray-400 shrink-0" />
+          <input
+            type="search"
+            placeholder="Поиск"
+            className="flex-1 bg-transparent text-[17px] text-black placeholder:text-gray-400 outline-none"
+            aria-label="Поиск"
+          />
+        </div>
+      </div>
+
+      <header className="p-5 pt-4">
         <h1 className="text-[34px] font-bold tracking-tight">Сегодня</h1>
+        {/* Картинка под надписью: на всю ширину, динамичное разрешение */}
+        <div className="w-full mt-3 overflow-hidden rounded-xl">
+          <img
+            src="/logo-splash.png"
+            alt="Mini Market"
+            className="w-full h-auto object-contain object-left block"
+          />
+        </div>
       </header>
 
       <section className="mt-2">
@@ -22,20 +44,7 @@ export default function Home() {
         </div>
       </section>
 
-      <nav className="fixed bottom-0 w-full bg-white/80 backdrop-blur-md border-t border-gray-200 h-[83px] flex justify-around pt-3">
-        <div className="flex flex-col items-center gap-1 text-[#007AFF]">
-            <div className="w-6 h-6 bg-[#007AFF] rounded-md opacity-20"></div>
-            <span className="text-[10px] font-medium">Сегодня</span>
-        </div>
-        <div className="flex flex-col items-center gap-1 text-gray-400">
-            <div className="w-6 h-6 bg-gray-200 rounded-md"></div>
-            <span className="text-[10px] font-medium">Игры</span>
-        </div>
-        <div className="flex flex-col items-center gap-1 text-gray-400">
-            <div className="w-6 h-6 bg-gray-200 rounded-md"></div>
-            <span className="text-[10px] font-medium">Поиск</span>
-        </div>
-      </nav>
+      <BottomNav active="main" />
     </div>
   );
 }

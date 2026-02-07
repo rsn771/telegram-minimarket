@@ -1,15 +1,19 @@
 "use client";
 import { APPS } from "@/data/apps";
 import { useParams, useRouter } from "next/navigation";
-import { ChevronLeft, Star, Share, ShieldCheck, Zap } from "lucide-react";
+import { ChevronLeft, Star, Share, ShieldCheck, Zap, Plus } from "lucide-react";
 import { hapticFeedback } from "@/utils/telegram";
+import { useMyApps } from "@/context/MyAppsContext";
 
 export default function AppDetail() {
   const { id } = useParams();
   const router = useRouter();
+  const { toggleApp, isInMyApps } = useMyApps();
   const app = APPS.find((a) => a.id.toString() === id);
 
   if (!app) return <div className="p-10 text-center font-sans">Приложение не найдено</div>;
+
+  const inMyApps = isInMyApps(app.id);
 
   const handleBack = () => {
     hapticFeedback("light");
@@ -20,8 +24,13 @@ export default function AppDetail() {
     hapticFeedback("medium");
   };
 
-  const handleDownload = () => {
+  const handleOpen = () => {
     hapticFeedback("medium");
+  };
+
+  const handlePlus = () => {
+    hapticFeedback("light");
+    toggleApp(app.id);
   };
 
   return (
@@ -48,12 +57,24 @@ export default function AppDetail() {
               <h1 className="text-[22px] font-bold leading-tight tracking-tight text-gray-900">{app.name}</h1>
               <p className="text-gray-500 text-[15px] font-medium">{app.category.toUpperCase()}</p>
             </div>
-            <button 
-              onClick={handleDownload}
-              className="bg-[#007AFF] active:scale-95 transition-transform text-white px-8 py-1.5 rounded-full font-bold text-sm uppercase w-fit shadow-md shadow-blue-200"
-            >
-              Загрузить
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handlePlus}
+                aria-label={inMyApps ? "Убрать из моих приложений" : "Добавить в мои приложения"}
+                className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors active:scale-95 ${
+                  inMyApps ? "bg-[#007AFF] text-white" : "bg-gray-200 text-gray-500"
+                }`}
+              >
+                <Plus size={18} strokeWidth={2.5} />
+              </button>
+              <button 
+                onClick={handleOpen}
+                className="bg-[#007AFF] active:scale-95 transition-transform text-white px-8 py-1.5 rounded-full font-bold text-sm uppercase w-fit shadow-md shadow-blue-200"
+              >
+                Открыть
+              </button>
+            </div>
           </div>
         </div>
 

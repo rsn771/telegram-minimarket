@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import "./globals.css";
 import { TelegramWebApp } from "@/components/TelegramWebApp";
+import { SplashScreen } from "@/components/SplashScreen";
+import { MyAppsProvider } from "@/context/MyAppsContext";
 
 export const metadata: Metadata = {
   title: "Telegram Mini Market",
@@ -35,7 +37,9 @@ export default function RootLayout({
       </head>
       <body className="antialiased">
         <TelegramWebApp />
-        {children}
+        <MyAppsProvider>
+          <SplashScreen>{children}</SplashScreen>
+        </MyAppsProvider>
       </body>
     </html>
   );
