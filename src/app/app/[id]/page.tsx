@@ -11,7 +11,7 @@ export default function AppDetail() {
   const { toggleApp, isInMyApps } = useMyApps();
   const app = APPS.find((a) => a.id.toString() === id);
 
-  if (!app) return <div className="p-10 text-center font-sans">Приложение не найдено</div>;
+  if (!app) return <div className="p-10 text-center font-sans text-black dark:text-white bg-transparent">Приложение не найдено</div>;
 
   const inMyApps = isInMyApps(app.id);
 
@@ -34,9 +34,8 @@ export default function AppDetail() {
   };
 
   return (
-    <div className="bg-[#F2F2F7] min-h-screen pb-10 text-black font-sans antialiased">
-      {/* Верхняя панель */}
-      <div className="p-4 flex justify-between items-center bg-white/70 backdrop-blur-xl sticky top-0 z-50 border-b border-gray-200/50">
+    <div className="min-h-screen pb-10 font-sans antialiased bg-transparent">
+      <div className="p-4 flex justify-between items-center bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl sticky top-0 z-50 border-b border-white/20 dark:border-gray-700/50">
         <button onClick={handleBack} className="text-[#007AFF] flex items-center gap-0 font-normal text-[17px]">
           <ChevronLeft size={32} strokeWidth={2} /> 
           <span className="-ml-1">Назад</span>
@@ -46,16 +45,15 @@ export default function AppDetail() {
         </button>
       </div>
 
-      <div className="bg-white pb-6 shadow-sm">
-        {/* Шапка */}
+      <div className="mx-3 mt-3 rounded-2xl bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border border-white/40 dark:border-gray-600/40 pb-6 overflow-hidden">
         <div className="px-5 flex gap-5 mt-4">
           <div className="relative shrink-0">
-            <img src={app.icon} className="w-28 h-28 rounded-[22%] shadow-lg border border-black/5 object-cover" alt={app.name} />
+            <img src={app.icon} className="w-28 h-28 rounded-[22%] shadow-lg border border-white/40 dark:border-gray-600/40 object-cover" alt={app.name} />
           </div>
           <div className="flex flex-col justify-between py-1">
             <div>
-              <h1 className="text-[22px] font-bold leading-tight tracking-tight text-gray-900">{app.name}</h1>
-              <p className="text-gray-500 text-[15px] font-medium">{app.category.toUpperCase()}</p>
+              <h1 className="text-[22px] font-bold leading-tight tracking-tight text-black dark:text-white">{app.name}</h1>
+              <p className="text-gray-500 dark:text-gray-400 text-[15px] font-medium">{app.category.toUpperCase()}</p>
             </div>
             <div className="flex items-center gap-2">
               <button
@@ -63,14 +61,14 @@ export default function AppDetail() {
                 onClick={handlePlus}
                 aria-label={inMyApps ? "Убрать из моих приложений" : "Добавить в мои приложения"}
                 className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors active:scale-95 ${
-                  inMyApps ? "bg-[#007AFF] text-white" : "bg-gray-200 text-gray-500"
+                  inMyApps ? "bg-[#007AFF] text-white" : "bg-white/60 dark:bg-gray-700/60 text-gray-500 dark:text-gray-400 border border-white/40 dark:border-gray-600/40"
                 }`}
               >
                 <Plus size={18} strokeWidth={2.5} />
               </button>
               <button 
                 onClick={handleOpen}
-                className="bg-[#007AFF] active:scale-95 transition-transform text-white px-8 py-1.5 rounded-full font-bold text-sm uppercase w-fit shadow-md shadow-blue-200"
+                className="bg-[#007AFF] active:scale-95 transition-transform text-white px-8 py-1.5 rounded-full font-bold text-sm uppercase w-fit shadow-md"
               >
                 Открыть
               </button>
@@ -78,33 +76,31 @@ export default function AppDetail() {
           </div>
         </div>
 
-        {/* Статистика */}
-        <div className="flex justify-around border-t border-gray-100 mt-8 py-4 mx-5">
+        <div className="flex justify-around border-t border-gray-200/80 dark:border-gray-600/80 mt-8 py-4 mx-5">
           <div className="text-center flex-1">
-            <p className="text-[10px] text-gray-400 font-bold uppercase mb-1">Рейтинг</p>
-            <p className="text-[20px] font-black text-gray-700 flex items-center gap-1 justify-center">
-              {app.rating} <Star size={16} className="fill-gray-700 stroke-none" />
+            <p className="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase mb-1">Рейтинг</p>
+            <p className="text-[20px] font-black text-gray-700 dark:text-gray-200 flex items-center gap-1 justify-center">
+              {app.rating} <Star size={16} className="fill-gray-700 dark:fill-gray-300 stroke-none" />
             </p>
           </div>
-          <div className="w-[1px] bg-gray-100 h-8 self-center"></div>
+          <div className="w-[1px] bg-gray-200 dark:bg-gray-600 h-8 self-center"></div>
           <div className="text-center flex-1 px-2">
-            <p className="text-[10px] text-gray-400 font-bold uppercase mb-1">Безопасность</p>
-            <p className="text-[20px] font-black text-gray-700 flex justify-center"><ShieldCheck className="text-green-500" /></p>
+            <p className="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase mb-1">Безопасность</p>
+            <p className="text-[20px] font-black text-gray-700 dark:text-gray-200 flex justify-center"><ShieldCheck className="text-green-500" /></p>
           </div>
-          <div className="w-[1px] bg-gray-100 h-8 self-center"></div>
+          <div className="w-[1px] bg-gray-200 dark:bg-gray-600 h-8 self-center"></div>
           <div className="text-center flex-1">
-            <p className="text-[10px] text-gray-400 font-bold uppercase mb-1">Возраст</p>
-            <p className="text-[20px] font-black text-gray-700">4+</p>
+            <p className="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase mb-1">Возраст</p>
+            <p className="text-[20px] font-black text-gray-700 dark:text-gray-200">4+</p>
           </div>
         </div>
       </div>
 
-      {/* Скриншоты */}
-      <div className="mt-6 bg-white py-6 shadow-sm">
-        <h2 className="px-5 text-[20px] font-bold mb-4 tracking-tight">Предпросмотр</h2>
+      <div className="mt-3 mx-3 rounded-2xl bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border border-white/40 dark:border-gray-600/40 py-6 overflow-hidden">
+        <h2 className="px-5 text-[20px] font-bold mb-4 tracking-tight text-black dark:text-white">Предпросмотр</h2>
         <div className="flex gap-4 overflow-x-auto px-5 no-scrollbar">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="min-w-[260px] h-[460px] bg-gradient-to-br from-blue-500 to-purple-600 rounded-[2.5rem] flex-shrink-0 shadow-xl overflow-hidden relative border-[6px] border-black">
+            <div key={i} className="min-w-[260px] h-[460px] bg-gradient-to-br from-blue-500 to-purple-600 rounded-[2.5rem] flex-shrink-0 shadow-xl overflow-hidden relative border-[6px] border-black/20 dark:border-gray-600">
                <div className="absolute top-0 w-full h-6 bg-black flex justify-center">
                   <div className="w-20 h-4 bg-black rounded-b-xl"></div>
                </div>
@@ -118,10 +114,9 @@ export default function AppDetail() {
         </div>
       </div>
       
-      {/* Описание */}
-      <div className="px-5 mt-6 bg-white py-6 shadow-sm border-t border-gray-100">
-        <h2 className="text-[20px] font-bold mb-3 tracking-tight">Описание</h2>
-        <p className="text-gray-600 leading-[1.5] text-[16px] font-normal">
+      <div className="mx-3 mt-3 px-5 py-6 rounded-2xl bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border border-white/40 dark:border-gray-600/40">
+        <h2 className="text-[20px] font-bold mb-3 tracking-tight text-black dark:text-white">Описание</h2>
+        <p className="text-gray-600 dark:text-gray-300 leading-[1.5] text-[16px] font-normal">
           Это официальное приложение для платформы Telegram. Мы объединили удобство мессенджера и мощь современных технологий. 
           <br /><br />
           • Мгновенный запуск без установки <br />

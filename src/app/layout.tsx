@@ -4,6 +4,7 @@ import "./globals.css";
 import { TelegramWebApp } from "@/components/TelegramWebApp";
 import { SplashScreen } from "@/components/SplashScreen";
 import { MyAppsProvider } from "@/context/MyAppsContext";
+import { ThemeProvider } from "@/context/ThemeContext";
 
 export const metadata: Metadata = {
   title: "Telegram Mini Market",
@@ -37,9 +38,11 @@ export default function RootLayout({
       </head>
       <body className="antialiased">
         <TelegramWebApp />
-        <MyAppsProvider>
-          <SplashScreen>{children}</SplashScreen>
-        </MyAppsProvider>
+        <ThemeProvider>
+          <MyAppsProvider>
+            <SplashScreen>{children}</SplashScreen>
+          </MyAppsProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -1,27 +1,35 @@
-import { Search } from "lucide-react";
+"use client";
+
+import Link from "next/link";
 import { BottomNav } from "@/components/BottomNav";
+import { SECTIONS } from "@/data/sections";
+import { hapticFeedback } from "@/utils/telegram";
 
 export default function SectionsPage() {
   return (
-    <div className="bg-white min-h-screen pb-24 text-black">
-      <div className="sticky top-0 z-10 bg-white/95 backdrop-blur-md border-b border-gray-100">
-        <div className="px-4 py-3 flex items-center gap-3 bg-[#F2F2F7] rounded-xl mx-4 mt-4 mb-2">
-          <Search size={20} className="text-gray-400 shrink-0" />
-          <input
-            type="search"
-            placeholder="Поиск"
-            className="flex-1 bg-transparent text-[17px] text-black placeholder:text-gray-400 outline-none"
-            aria-label="Поиск"
-          />
-        </div>
-      </div>
-
-      <header className="p-5 pt-4">
-        <h1 className="text-[34px] font-bold tracking-tight">Разделы</h1>
+    <div className="min-h-screen pb-24 bg-transparent">
+      <header className="p-5 pt-6">
+        <h1 className="text-[34px] font-bold tracking-tight text-black dark:text-white">Разделы</h1>
       </header>
 
-      <section className="px-5 py-8 text-center text-gray-500 text-[15px]">
-        Здесь будут разделы приложений.
+      <section className="px-4 pb-6">
+        <div className="grid grid-cols-2 gap-3">
+          {SECTIONS.map(({ slug, title, Icon }) => (
+            <Link
+              key={slug}
+              href={`/sections/${slug}`}
+              onClick={() => hapticFeedback("light")}
+              className="aspect-square rounded-2xl bg-white/50 dark:bg-gray-800/50 backdrop-blur-md flex flex-col items-center justify-center gap-3 active:opacity-80 transition-opacity border border-white/40 dark:border-gray-600/40"
+            >
+              <div className="w-12 h-12 rounded-xl bg-white/70 dark:bg-gray-700/70 flex items-center justify-center border border-white/40 dark:border-gray-600/40">
+                <Icon size={26} className="text-[#007AFF]" strokeWidth={2} />
+              </div>
+              <span className="text-[17px] font-bold text-black dark:text-white text-center px-2">
+                {title}
+              </span>
+            </Link>
+          ))}
+        </div>
       </section>
 
       <BottomNav active="sections" />

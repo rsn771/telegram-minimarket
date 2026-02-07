@@ -7,8 +7,7 @@
     font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background-color: #ffffff;
-    color: #000000;
+    @apply bg-gray-100 text-black dark:bg-gray-950 dark:text-white transition-colors duration-200;
   }
   
   html {
