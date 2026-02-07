@@ -13,9 +13,9 @@ export default function MyAppsPage() {
 
   return (
     <div className="min-h-screen pb-24 bg-transparent">
-      <div className="sticky top-0 z-10 bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl border-b border-white/20 dark:border-gray-700/50">
-        <div className="px-4 pt-4 pb-2 flex items-center gap-2">
-          <div className="flex-1 flex items-center gap-3 px-4 py-3 rounded-2xl bg-white/50 dark:bg-gray-800/50 backdrop-blur-md border border-white/40 dark:border-gray-600/40">
+      <div className="fixed left-0 right-0 z-10 pt-[env(safe-area-inset-top,20px)] px-4 pb-2">
+        <div className="flex items-center gap-2">
+          <div className="flex-1 flex items-center gap-3 px-4 py-3 rounded-2xl bg-white/35 dark:bg-gray-800/35 backdrop-blur-xl border border-white/30 dark:border-gray-600/30 min-w-0 shadow-lg shadow-black/5">
             <Search size={20} className="text-gray-500 dark:text-gray-400 shrink-0" />
             <input
               type="search"
@@ -28,6 +28,7 @@ export default function MyAppsPage() {
         </div>
       </div>
 
+      <div className="pt-[calc(env(safe-area-inset-top,20px)+56px)]">
       <header className="p-5 pt-4">
         <h1 className="text-[34px] font-bold tracking-tight text-black dark:text-white">Мои приложения</h1>
       </header>
@@ -47,6 +48,7 @@ export default function MyAppsPage() {
       </section>
 
       <BottomNav active="my-apps" />
+      </div>
     </div>
   );
 }

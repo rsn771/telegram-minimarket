@@ -44,77 +44,76 @@ export function HomeSearch() {
 
   return (
     <div className="min-h-screen pb-24 bg-transparent">
-      {/* Жидкое стекло: поиск + переключатель темы */}
+      {/* Фиксированный поискбар без фона, в стиле жидкого стекла */}
       <div
-        className="sticky top-0 z-20 bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl border-b border-white/20 dark:border-gray-700/50"
+        className="fixed left-0 right-0 z-20 pt-[env(safe-area-inset-top,20px)] px-4 pb-2"
         ref={wrapRef}
       >
-        <div className="px-4 pt-4 pb-2">
-          <div className="flex items-center gap-2">
-            <div className="flex-1 flex items-center gap-3 px-4 py-3 rounded-2xl bg-white/50 dark:bg-gray-800/50 backdrop-blur-md border border-white/40 dark:border-gray-600/40 min-w-0">
-              <Search size={20} className="text-gray-500 dark:text-gray-400 shrink-0" />
-              <input
-                ref={inputRef}
-                type="search"
-                placeholder="Поиск приложений"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                onFocus={() => setFocused(true)}
-                onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
-                className="flex-1 bg-transparent text-[17px] text-black dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 outline-none min-w-0"
-                aria-label="Поиск"
-                aria-autocomplete="list"
-                aria-expanded={displaySuggestions}
-              />
-            </div>
-            <ThemeToggle />
+        <div className="flex items-center gap-2">
+          <div className="flex-1 flex items-center gap-3 px-4 py-3 rounded-2xl bg-white/35 dark:bg-gray-800/35 backdrop-blur-xl border border-white/30 dark:border-gray-600/30 min-w-0 shadow-lg shadow-black/5">
+            <Search size={20} className="text-gray-500 dark:text-gray-400 shrink-0" />
+            <input
+              ref={inputRef}
+              type="search"
+              placeholder="Поиск приложений"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onFocus={() => setFocused(true)}
+              onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+              className="flex-1 bg-transparent text-[17px] text-black dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 outline-none min-w-0"
+              aria-label="Поиск"
+              aria-autocomplete="list"
+              aria-expanded={displaySuggestions}
+            />
           </div>
-
-          {displaySuggestions && (
-            <div className="mt-2 rounded-2xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-white/40 dark:border-gray-600/40 shadow-xl overflow-hidden max-h-[280px] overflow-y-auto">
-              <p className="px-4 py-2 text-[12px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-tight">
-                Совпадения
-              </p>
-              <ul className="pb-2" role="listbox">
-                {matches.slice(0, 8).map((app) => (
-                  <li key={app.id} role="option">
-                    <Link
-                      href={`/app/${app.id}`}
-                      onClick={() => {
-                        hapticFeedback("light");
-                        setQuery("");
-                        setShowSuggestions(false);
-                        inputRef.current?.blur();
-                      }}
-                      className="flex items-center gap-3 px-4 py-3 active:bg-black/5 dark:active:bg-white/5 transition-colors"
-                    >
-                      <div className="w-10 h-10 flex-shrink-0 overflow-hidden rounded-[18%] border border-gray-200/80 dark:border-gray-600/80">
-                        <img src={app.icon} alt="" className="w-full h-full object-cover" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-[15px] text-black dark:text-white truncate">
-                          {app.name}
-                        </p>
-                        <p className="text-[13px] text-gray-500 dark:text-gray-400 truncate">
-                          {app.category}
-                        </p>
-                      </div>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {hasQuery && matches.length === 0 && (
-            <p className="mt-2 px-2 text-[15px] text-gray-500 dark:text-gray-400">
-              Ничего не найдено по запросу «{query.trim()}»
-            </p>
-          )}
+          <ThemeToggle />
         </div>
+
+        {displaySuggestions && (
+          <div className="mt-2 rounded-2xl bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border border-white/30 dark:border-gray-600/30 shadow-xl overflow-hidden max-h-[280px] overflow-y-auto">
+            <p className="px-4 py-2 text-[12px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-tight">
+              Совпадения
+            </p>
+            <ul className="pb-2" role="listbox">
+              {matches.slice(0, 8).map((app) => (
+                <li key={app.id} role="option">
+                  <Link
+                    href={`/app/${app.id}`}
+                    onClick={() => {
+                      hapticFeedback("light");
+                      setQuery("");
+                      setShowSuggestions(false);
+                      inputRef.current?.blur();
+                    }}
+                    className="flex items-center gap-3 px-4 py-3 active:bg-black/5 dark:active:bg-white/5 transition-colors"
+                  >
+                    <div className="w-10 h-10 flex-shrink-0 overflow-hidden rounded-[18%] border border-gray-200/80 dark:border-gray-600/80">
+                      <img src={app.icon} alt="" className="w-full h-full object-cover" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-[15px] text-black dark:text-white truncate">
+                        {app.name}
+                      </p>
+                      <p className="text-[13px] text-gray-500 dark:text-gray-400 truncate">
+                        {app.category}
+                      </p>
+                    </div>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {hasQuery && matches.length === 0 && (
+          <p className="mt-2 px-2 text-[15px] text-gray-500 dark:text-gray-400">
+            Ничего не найдено по запросу «{query.trim()}»
+          </p>
+        )}
       </div>
 
-      <header className="p-5 pt-4">
+      <div className="pt-[calc(env(safe-area-inset-top,20px)+56px)]">
+      <header className="p-5 pt-2">
         <h1 className="text-[34px] font-bold tracking-tight text-black dark:text-white">Сегодня</h1>
         <div className="w-full mt-3 overflow-hidden rounded-2xl bg-white/40 dark:bg-gray-800/40 backdrop-blur-md border border-white/30 dark:border-gray-600/30">
           <img
@@ -139,6 +138,7 @@ export function HomeSearch() {
       </section>
 
       <BottomNav active="main" />
+      </div>
     </div>
   );
 }

@@ -8,7 +8,7 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     @apply bg-gray-100 text-black dark:bg-gray-950 dark:text-white transition-colors duration-200;
-    padding-top: env(safe-area-inset-top, 12px);
+    padding-top: env(safe-area-inset-top, 20px);
   }
   
   html {
