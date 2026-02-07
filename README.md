@@ -74,6 +74,23 @@ vercel
 3. Выберите ваше Mini App из списка
 4. Приложение должно открыться в Telegram
 
+### Ответ бота на команду /start
+
+Чтобы бот при команде `/start` присылал приветственное сообщение:
+
+1. **Переменная окружения**  
+   В Vercel (Settings → Environment Variables) и в локальном `.env.local` добавьте:
+   ```
+   TELEGRAM_BOT_TOKEN=ваш_токен_от_BotFather
+   ```
+
+2. **Вебхук**  
+   Один раз укажите Telegram, куда слать обновления (подставьте свой токен и домен):
+   ```bash
+   curl "https://api.telegram.org/bot<ВАШ_ТОКЕН>/setWebhook?url=https://<ваш-домен>.vercel.app/api/telegram-webhook"
+   ```
+   После этого при отправке `/start` бот будет отвечать текстом о Market miniapp.
+
 ### Шаг 5: Публикация (опционально)
 
 После тестирования вы можете опубликовать Mini App:

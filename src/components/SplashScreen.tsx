@@ -49,7 +49,6 @@ export function SplashScreen({ children }: { children: React.ReactNode }) {
               priority
             />
           </div>
-          {/* Белый оверлей поверх картинки при исчезновении */}
           <div
             className="absolute inset-0 bg-white transition-opacity ease-out"
             style={{
