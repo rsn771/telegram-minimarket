@@ -6,10 +6,10 @@ import Link from "next/link";
 import { AppCard } from "@/components/AppCard";
 import { BottomNav } from "@/components/BottomNav";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { useApps } from "@/context/AppsContext";
+import { useApps, type AppItem } from "@/context/AppsContext";
 import { hapticFeedback } from "@/utils/telegram";
 
-function filterApps(apps: { name: string; category: string }[], query: string) {
+function filterApps(apps: AppItem[], query: string): AppItem[] {
   if (!query.trim()) return apps;
   const q = query.trim().toLowerCase();
   return apps.filter(
