@@ -1,16 +1,18 @@
 "use client";
-import { APPS } from "@/data/apps";
 import { useParams, useRouter } from "next/navigation";
 import { ChevronLeft, Star, Share, ShieldCheck, Zap, Plus } from "lucide-react";
 import { hapticFeedback } from "@/utils/telegram";
+import { useApps } from "@/context/AppsContext";
 import { useMyApps } from "@/context/MyAppsContext";
 
 export default function AppDetail() {
   const { id } = useParams();
   const router = useRouter();
+  const { getAppById, loading } = useApps();
   const { toggleApp, isInMyApps } = useMyApps();
-  const app = APPS.find((a) => a.id.toString() === id);
+  const app = typeof id === "string" ? getAppById(id) : undefined;
 
+  if (loading) return <div className="p-10 text-center font-sans text-black dark:text-white bg-transparent">Загрузка…</div>;
   if (!app) return <div className="p-10 text-center font-sans text-black dark:text-white bg-transparent">Приложение не найдено</div>;
 
   const inMyApps = isInMyApps(app.id);
@@ -26,6 +28,11 @@ export default function AppDetail() {
 
   const handleOpen = () => {
     hapticFeedback("medium");
+    if (app.url && typeof window !== "undefined" && (window as unknown as { Telegram?: { WebApp?: { openLink?: (url: string) => void } } }).Telegram?.WebApp?.openLink) {
+      (window as unknown as { Telegram: { WebApp: { openLink: (url: string) => void } } }).Telegram.WebApp.openLink(app.url);
+    } else if (app.url) {
+      window.open(app.url, "_blank");
+    }
   };
 
   const handlePlus = () => {
@@ -80,48 +87,55 @@ export default function AppDetail() {
           <div className="text-center flex-1">
             <p className="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase mb-1">Рейтинг</p>
             <p className="text-[20px] font-black text-gray-700 dark:text-gray-200 flex items-center gap-1 justify-center">
-              {app.rating} <Star size={16} className="fill-gray-700 dark:fill-gray-300 stroke-none" />
+              {Number(app.rating) || 0} <Star size={16} className="fill-gray-700 dark:fill-gray-300 stroke-none" />
             </p>
           </div>
           <div className="w-[1px] bg-gray-200 dark:bg-gray-600 h-8 self-center"></div>
           <div className="text-center flex-1 px-2">
             <p className="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase mb-1">Безопасность</p>
-            <p className="text-[20px] font-black text-gray-700 dark:text-gray-200 flex justify-center"><ShieldCheck className="text-green-500" /></p>
-          </div>
-          <div className="w-[1px] bg-gray-200 dark:bg-gray-600 h-8 self-center"></div>
-          <div className="text-center flex-1">
-            <p className="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase mb-1">Возраст</p>
-            <p className="text-[20px] font-black text-gray-700 dark:text-gray-200">4+</p>
+            <p className="text-[20px] font-black text-gray-700 dark:text-gray-200 flex justify-center">
+              {app.isVerified ? <ShieldCheck className="text-green-500" /> : <ShieldCheck className="text-gray-400 dark:text-gray-500" />}
+            </p>
           </div>
         </div>
       </div>
 
-      <div className="mt-3 mx-3 rounded-2xl bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border border-white/40 dark:border-gray-600/40 py-6 overflow-hidden">
-        <h2 className="px-5 text-[20px] font-bold mb-4 tracking-tight text-black dark:text-white">Предпросмотр</h2>
-        <div className="flex gap-4 overflow-x-auto px-5 no-scrollbar">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="min-w-[260px] h-[460px] bg-gradient-to-br from-blue-500 to-purple-600 rounded-[2.5rem] flex-shrink-0 shadow-xl overflow-hidden relative border-[6px] border-black/20 dark:border-gray-600">
-               <div className="absolute top-0 w-full h-6 bg-black flex justify-center">
+      {app.screenshots && app.screenshots.length > 0 && (
+        <div className="mt-3 mx-3 rounded-2xl bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border border-white/40 dark:border-gray-600/40 py-6 overflow-hidden">
+          <h2 className="px-5 text-[20px] font-bold mb-4 tracking-tight text-black dark:text-white">Предпросмотр</h2>
+          <div className="flex gap-4 overflow-x-auto px-5 no-scrollbar">
+            {app.screenshots.map((src, i) => (
+              <div key={i} className="min-w-[260px] h-[460px] rounded-[2.5rem] flex-shrink-0 shadow-xl overflow-hidden relative border-[6px] border-black/20 dark:border-gray-600 bg-gray-100 dark:bg-gray-700">
+                <img src={src} alt="" className="w-full h-full object-cover" />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      {(!app.screenshots || app.screenshots.length === 0) && (
+        <div className="mt-3 mx-3 rounded-2xl bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border border-white/40 dark:border-gray-600/40 py-6 overflow-hidden">
+          <h2 className="px-5 text-[20px] font-bold mb-4 tracking-tight text-black dark:text-white">Предпросмотр</h2>
+          <div className="flex gap-4 overflow-x-auto px-5 no-scrollbar">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="min-w-[260px] h-[460px] bg-gradient-to-br from-blue-500 to-purple-600 rounded-[2.5rem] flex-shrink-0 shadow-xl overflow-hidden relative border-[6px] border-black/20 dark:border-gray-600">
+                <div className="absolute top-0 w-full h-6 bg-black flex justify-center">
                   <div className="w-20 h-4 bg-black rounded-b-xl"></div>
-               </div>
-               <div className="flex flex-col items-center justify-center h-full text-white p-8 text-center">
+                </div>
+                <div className="flex flex-col items-center justify-center h-full text-white p-8 text-center">
                   <Zap size={48} className="mb-4 opacity-50" />
                   <div className="text-xl font-bold italic">AMAZING INTERFACE</div>
                   <div className="text-sm opacity-70 mt-2 text-balance">Built for Telegram Mini Apps 2026</div>
-               </div>
-            </div>
-          ))}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
-      
+      )}
+
       <div className="mx-3 mt-3 px-5 py-6 rounded-2xl bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border border-white/40 dark:border-gray-600/40">
         <h2 className="text-[20px] font-bold mb-3 tracking-tight text-black dark:text-white">Описание</h2>
-        <p className="text-gray-600 dark:text-gray-300 leading-[1.5] text-[16px] font-normal">
-          Это официальное приложение для платформы Telegram. Мы объединили удобство мессенджера и мощь современных технологий. 
-          <br /><br />
-          • Мгновенный запуск без установки <br />
-          • Полная интеграция с вашим аккаунтом <br />
-          • Безопасные платежи через Telegram Pay
+        <p className="text-gray-600 dark:text-gray-300 leading-[1.5] text-[16px] font-normal whitespace-pre-line">
+          {app.description || "Описание пока не добавлено."}
         </p>
       </div>
     </div>

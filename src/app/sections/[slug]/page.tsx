@@ -7,19 +7,27 @@ import { useRouter } from "next/navigation";
 import { BottomNav } from "@/components/BottomNav";
 import { AppCard } from "@/components/AppCard";
 import { SECTIONS } from "@/data/sections";
-import { APPS } from "@/data/apps";
+import { useApps } from "@/context/AppsContext";
 import { hapticFeedback } from "@/utils/telegram";
 
 export default function SectionPage() {
   const params = useParams();
   const router = useRouter();
   const slug = params.slug as string;
+  const { apps: allApps, loading } = useApps();
 
   const section = SECTIONS.find((s) => s.slug === slug);
   const apps = section
-    ? APPS.filter((a) => a.category === section.category)
+    ? allApps.filter((a) => a.category === section.category)
     : [];
 
+  if (loading && apps.length === 0 && section) {
+    return (
+      <div className="min-h-screen pb-24 bg-transparent flex flex-col items-center justify-center p-5">
+        <p className="text-gray-500 dark:text-gray-400">Загрузка…</p>
+      </div>
+    );
+  }
   if (!section) {
     return (
       <div className="min-h-screen pb-24 bg-transparent flex flex-col items-center justify-center p-5">

@@ -6,13 +6,13 @@ import Link from "next/link";
 import { AppCard } from "@/components/AppCard";
 import { BottomNav } from "@/components/BottomNav";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { APPS } from "@/data/apps";
+import { useApps } from "@/context/AppsContext";
 import { hapticFeedback } from "@/utils/telegram";
 
-function filterApps(query: string) {
-  if (!query.trim()) return APPS;
+function filterApps(apps: { name: string; category: string }[], query: string) {
+  if (!query.trim()) return apps;
   const q = query.trim().toLowerCase();
-  return APPS.filter(
+  return apps.filter(
     (app) =>
       app.name.toLowerCase().includes(q) ||
       app.category.toLowerCase().includes(q)
@@ -20,13 +20,14 @@ function filterApps(query: string) {
 }
 
 export function HomeSearch() {
+  const { apps, loading, error } = useApps();
   const [query, setQuery] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [focused, setFocused] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
 
-  const matches = useMemo(() => filterApps(query), [query]);
+  const matches = useMemo(() => filterApps(apps, query), [apps, query]);
   const hasQuery = query.trim().length > 0;
 
   useEffect(() => {
@@ -113,6 +114,14 @@ export function HomeSearch() {
       </div>
 
       <div className="pt-[calc(env(safe-area-inset-top,20px)+56px)]">
+      {error && (
+        <div className="mx-4 mt-2 px-4 py-3 rounded-2xl bg-red-500/20 text-red-700 dark:text-red-300 text-sm">
+          {error}
+        </div>
+      )}
+      {loading && apps.length === 0 && (
+        <div className="p-8 text-center text-gray-500 dark:text-gray-400">Загрузка…</div>
+      )}
       <header className="p-5 pt-2">
         <h1 className="text-[34px] font-bold tracking-tight text-black dark:text-white">Сегодня</h1>
         <div className="w-full mt-3 overflow-hidden rounded-2xl bg-white/40 dark:bg-gray-800/40 backdrop-blur-md border border-white/30 dark:border-gray-600/30">
@@ -131,7 +140,7 @@ export function HomeSearch() {
         </div>
 
         <div className="flex flex-col">
-          {(query.trim() ? matches : APPS).map((app) => (
+          {(query.trim() ? matches : apps).map((app) => (
             <AppCard key={app.id} app={app} />
           ))}
         </div>

@@ -3,6 +3,7 @@ import Script from "next/script";
 import "./globals.css";
 import { TelegramWebApp } from "@/components/TelegramWebApp";
 import { SplashScreen } from "@/components/SplashScreen";
+import { AppsProvider } from "@/context/AppsContext";
 import { MyAppsProvider } from "@/context/MyAppsContext";
 import { ThemeProvider } from "@/context/ThemeContext";
 
@@ -39,9 +40,11 @@ export default function RootLayout({
       <body className="antialiased">
         <TelegramWebApp />
         <ThemeProvider>
-          <MyAppsProvider>
-            <SplashScreen>{children}</SplashScreen>
-          </MyAppsProvider>
+          <AppsProvider>
+            <MyAppsProvider>
+              <SplashScreen>{children}</SplashScreen>
+            </MyAppsProvider>
+          </AppsProvider>
         </ThemeProvider>
       </body>
     </html>

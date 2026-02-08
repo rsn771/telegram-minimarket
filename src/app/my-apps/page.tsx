@@ -4,12 +4,13 @@ import { Search } from "lucide-react";
 import { BottomNav } from "@/components/BottomNav";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { AppCard } from "@/components/AppCard";
+import { useApps } from "@/context/AppsContext";
 import { useMyApps } from "@/context/MyAppsContext";
-import { APPS } from "@/data/apps";
 
 export default function MyAppsPage() {
+  const { apps, loading } = useApps();
   const { myAppIds } = useMyApps();
-  const myApps = APPS.filter((app) => myAppIds.includes(app.id));
+  const myApps = apps.filter((app) => myAppIds.includes(app.id));
 
   return (
     <div className="min-h-screen pb-24 bg-transparent">
@@ -34,7 +35,9 @@ export default function MyAppsPage() {
       </header>
 
       <section className="mt-2">
-        {myApps.length === 0 ? (
+        {loading && myApps.length === 0 ? (
+          <div className="px-5 py-12 text-center text-gray-500 dark:text-gray-400 text-[15px]">Загрузка…</div>
+        ) : myApps.length === 0 ? (
           <div className="px-5 py-12 text-center text-gray-500 dark:text-gray-400 text-[15px] rounded-2xl mx-2 bg-white/40 dark:bg-gray-800/40 backdrop-blur-md border border-white/30 dark:border-gray-600/30">
             Пока ничего нет. Нажмите + на карточке приложения или на странице приложения, чтобы добавить сюда.
           </div>

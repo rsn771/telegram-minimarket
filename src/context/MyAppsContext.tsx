@@ -5,28 +5,28 @@ import { createContext, useContext, useCallback, useState, useEffect } from "rea
 const STORAGE_KEY = "telegram-minimarket-my-apps";
 
 type MyAppsContextType = {
-  myAppIds: number[];
-  addApp: (id: number) => void;
-  removeApp: (id: number) => void;
-  toggleApp: (id: number) => void;
-  isInMyApps: (id: number) => boolean;
+  myAppIds: string[];
+  addApp: (id: string) => void;
+  removeApp: (id: string) => void;
+  toggleApp: (id: string) => void;
+  isInMyApps: (id: string) => boolean;
 };
 
 const MyAppsContext = createContext<MyAppsContextType | null>(null);
 
-function loadFromStorage(): number[] {
+function loadFromStorage(): string[] {
   if (typeof window === "undefined") return [];
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed.map(Number).filter((n) => !Number.isNaN(n)) : [];
+    return Array.isArray(parsed) ? parsed.filter((x): x is string => typeof x === "string") : [];
   } catch {
     return [];
   }
 }
 
-function saveToStorage(ids: number[]) {
+function saveToStorage(ids: string[]) {
   if (typeof window === "undefined") return;
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(ids));
@@ -34,33 +34,33 @@ function saveToStorage(ids: number[]) {
 }
 
 export function MyAppsProvider({ children }: { children: React.ReactNode }) {
-  const [myAppIds, setMyAppIds] = useState<number[]>([]);
+  const [myAppIds, setMyAppIds] = useState<string[]>([]);
 
   useEffect(() => {
     setMyAppIds(loadFromStorage());
   }, []);
 
-  const persist = useCallback((ids: number[]) => {
+  const persist = useCallback((ids: string[]) => {
     setMyAppIds(ids);
     saveToStorage(ids);
   }, []);
 
   const addApp = useCallback(
-    (id: number) => {
+    (id: string) => {
       persist([...new Set([...myAppIds, id])]);
     },
     [myAppIds, persist]
   );
 
   const removeApp = useCallback(
-    (id: number) => {
+    (id: string) => {
       persist(myAppIds.filter((x) => x !== id));
     },
     [myAppIds, persist]
   );
 
   const toggleApp = useCallback(
-    (id: number) => {
+    (id: string) => {
       if (myAppIds.includes(id)) removeApp(id);
       else addApp(id);
     },
@@ -68,7 +68,7 @@ export function MyAppsProvider({ children }: { children: React.ReactNode }) {
   );
 
   const isInMyApps = useCallback(
-    (id: number) => myAppIds.includes(id),
+    (id: string) => myAppIds.includes(id),
     [myAppIds]
   );
 
