@@ -44,7 +44,7 @@ export default function MyAppsPage() {
         ) : (
           <div className="flex flex-col">
             {myApps.map((app) => (
-              <AppCard key={app.id} app={app} />
+              <AppCard key={app.id} app={app} openDirectly />
             ))}
           </div>
         )}

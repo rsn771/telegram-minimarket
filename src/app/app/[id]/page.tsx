@@ -12,12 +12,15 @@ export default function AppDetail() {
   const { getAppById, loading } = useApps();
   const { toggleApp, isInMyApps } = useMyApps();
   const [fullscreenScreenshotIndex, setFullscreenScreenshotIndex] = useState<number | null>(null);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [selectedRating, setSelectedRating] = useState(0);
+  const [reviewText, setReviewText] = useState("");
   const app = typeof id === "string" ? getAppById(id) : undefined;
 
   if (loading) return <div className="p-10 text-center font-sans text-black dark:text-white bg-transparent">Загрузка…</div>;
   if (!app) return <div className="p-10 text-center font-sans text-black dark:text-white bg-transparent">Приложение не найдено</div>;
 
-  const inMyApps = isInMyApps(app.id);
+  const inMyApps = isInMyApps(String(app.id));
 
   const handleBack = () => {
     hapticFeedback("light");
@@ -44,7 +47,7 @@ export default function AppDetail() {
 
   const handlePlus = () => {
     hapticFeedback("light");
-    toggleApp(app.id);
+    toggleApp(String(app.id));
   };
 
   const openScreenshot = (index: number) => {
@@ -57,9 +60,27 @@ export default function AppDetail() {
     setFullscreenScreenshotIndex(null);
   };
 
+  const openReviewModal = () => {
+    hapticFeedback("light");
+    setShowReviewModal(true);
+  };
+
+  const closeReviewModal = () => {
+    hapticFeedback("light");
+    setShowReviewModal(false);
+    setSelectedRating(0);
+    setReviewText("");
+  };
+
+  const handleSubmitReview = () => {
+    hapticFeedback("medium");
+    // Здесь можно добавить отправку отзыва на сервер
+    closeReviewModal();
+  };
+
   return (
     <div className="min-h-screen pb-10 font-sans antialiased bg-transparent">
-      <div className="pt-[calc(0.5rem+env(safe-area-inset-top,0px)+1rem)] px-4 pb-2 flex justify-between items-center bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl sticky top-0 z-50 border-b border-white/20 dark:border-gray-700/50">
+      <div className="pt-[calc(0.25rem+env(safe-area-inset-top,0px)+0.75rem)] px-4 pb-1.5 flex justify-between items-center bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl sticky top-0 z-50 border-b border-white/20 dark:border-gray-700/50 shrink-0">
         <button onClick={handleBack} className="text-[#007AFF] flex items-center gap-0 font-normal text-[17px]">
           <ChevronLeft size={32} strokeWidth={2} /> 
           <span className="-ml-1">Назад</span>
@@ -69,7 +90,7 @@ export default function AppDetail() {
         </button>
       </div>
 
-      <div className="mx-3 mt-1 rounded-2xl bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border border-white/40 dark:border-gray-600/40 pb-6 overflow-hidden">
+      <div className="mx-3 mt-4 rounded-2xl bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border border-white/40 dark:border-gray-600/40 pb-6 overflow-hidden">
         <div className="px-5 flex gap-5 mt-4">
           <div className="relative shrink-0">
             <img src={app.icon} className="w-28 h-28 rounded-[22%] shadow-lg border border-white/40 dark:border-gray-600/40 object-cover" alt={app.name} />
@@ -88,7 +109,13 @@ export default function AppDetail() {
                   inMyApps ? "bg-[#007AFF] text-white" : "bg-white/60 dark:bg-gray-700/60 text-gray-500 dark:text-gray-400 border border-white/40 dark:border-gray-600/40"
                 }`}
               >
-                <Plus size={18} strokeWidth={2.5} />
+                {inMyApps ? (
+                  <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" className="shrink-0" aria-hidden>
+                    <path d="M20 6L9 17l-5-5" />
+                  </svg>
+                ) : (
+                  <Plus size={18} strokeWidth={2.5} />
+                )}
               </button>
               <button 
                 onClick={handleOpen}
@@ -160,6 +187,113 @@ export default function AppDetail() {
           {app.description || "Описание пока не добавлено."}
         </p>
       </div>
+
+      <div className="mx-3 mt-3 px-5 py-6 rounded-2xl bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border border-white/40 dark:border-gray-600/40">
+        <h2 className="text-[20px] font-bold mb-4 tracking-tight text-black dark:text-white">Отзывы</h2>
+        <div className="flex flex-wrap items-end gap-4 mb-5">
+          <button
+            type="button"
+            onClick={openReviewModal}
+            className="text-[15px] font-medium text-[#007AFF] pb-1 active:opacity-70"
+          >
+            Оценить
+          </button>
+          <p className="text-[32px] font-black text-gray-800 dark:text-gray-200 flex items-center gap-1.5">
+            {Number(app.rating) || 0} <Star size={28} className="fill-amber-400 text-amber-400 stroke-none" />
+          </p>
+        </div>
+        <div className="pt-4 border-t border-gray-200/80 dark:border-gray-600/80">
+          <div className="flex flex-wrap items-baseline gap-2 mb-1">
+            <p className="font-semibold text-[17px] text-black dark:text-white">Пользователь</p>
+            <p className="text-[13px] text-gray-500 dark:text-gray-400">7 февраля 2026</p>
+          </div>
+          <div className="flex items-center gap-1 mb-2">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <Star key={i} size={14} className="fill-amber-400 text-amber-400 stroke-none" />
+            ))}
+          </div>
+          <p className="text-gray-600 dark:text-gray-300 text-[15px] leading-relaxed">
+            Отличное мини-приложение, всё быстро и понятно. Рекомендую!
+          </p>
+        </div>
+      </div>
+
+      {showReviewModal && (
+        <div
+          className="fixed inset-0 z-[100] bg-black/50 flex items-center justify-center p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Оставить отзыв"
+          onClick={closeReviewModal}
+        >
+          <div
+            className="w-full max-w-md rounded-2xl bg-white dark:bg-gray-800 shadow-xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="px-6 py-5 border-b border-gray-200 dark:border-gray-700">
+              <h3 className="text-[20px] font-bold text-black dark:text-white">Оставить отзыв</h3>
+            </div>
+            <div className="px-6 py-5 space-y-5">
+              <div>
+                <p className="text-[15px] font-medium text-gray-700 dark:text-gray-300 mb-3">Оценка</p>
+                <div className="flex items-center gap-2">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => {
+                        hapticFeedback("light");
+                        setSelectedRating(star);
+                      }}
+                      className="focus:outline-none"
+                      aria-label={`Оценить ${star} звезд`}
+                    >
+                      <Star
+                        size={32}
+                        className={`transition-colors ${
+                          star <= selectedRating
+                            ? "fill-amber-400 text-amber-400 stroke-none"
+                            : "fill-gray-300 dark:fill-gray-600 text-gray-300 dark:text-gray-600 stroke-none"
+                        }`}
+                      />
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label htmlFor="review-text" className="block text-[15px] font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Ваш отзыв
+                </label>
+                <textarea
+                  id="review-text"
+                  value={reviewText}
+                  onChange={(e) => setReviewText(e.target.value)}
+                  placeholder="Напишите ваш отзыв..."
+                  className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-[15px] text-black dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#007AFF] resize-none"
+                  rows={4}
+                />
+              </div>
+            </div>
+            <div className="px-6 py-4 flex gap-3 border-t border-gray-200 dark:border-gray-700">
+              <button
+                type="button"
+                onClick={closeReviewModal}
+                className="flex-1 py-3 rounded-xl font-semibold text-[15px] bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 active:opacity-70"
+              >
+                Отменить
+              </button>
+              <button
+                type="button"
+                onClick={handleSubmitReview}
+                disabled={selectedRating === 0}
+                className="flex-1 py-3 rounded-xl font-semibold text-[15px] bg-[#007AFF] text-white active:opacity-70 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Отправить
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {app.screenshots && fullscreenScreenshotIndex !== null && app.screenshots[fullscreenScreenshotIndex] && (
         <div

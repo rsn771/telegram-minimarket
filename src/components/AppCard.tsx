@@ -4,10 +4,24 @@ import { Star, Plus } from "lucide-react";
 import Link from "next/link";
 import { hapticFeedback } from "@/utils/telegram";
 import { useMyApps } from "@/context/MyAppsContext";
+import type { AppItem } from "@/context/AppsContext";
 
-export const AppCard = ({ app }: any) => {
+function openAppUrl(url: string) {
+  const w = typeof window !== "undefined" ? (window as unknown as { Telegram?: { WebApp?: { openTelegramLink?: (url: string) => void; openLink?: (url: string) => void } } }) : null;
+  const tg = w?.Telegram?.WebApp;
+  if (tg && /^https?:\/\/(t\.me|telegram\.me)\//i.test(url)) {
+    tg.openTelegramLink?.(url);
+  } else if (tg?.openLink) {
+    tg.openLink(url);
+  } else {
+    window.open(url, "_blank");
+  }
+}
+
+export const AppCard = ({ app, openDirectly = false }: { app: AppItem; openDirectly?: boolean }) => {
   const { toggleApp, isInMyApps } = useMyApps();
-  const inMyApps = isInMyApps(app.id);
+  const appId = String(app.id);
+  const inMyApps = isInMyApps(appId);
 
   const handleClick = () => {
     hapticFeedback("light");
@@ -17,7 +31,14 @@ export const AppCard = ({ app }: any) => {
     e.preventDefault();
     e.stopPropagation();
     hapticFeedback("light");
-    toggleApp(app.id);
+    toggleApp(appId);
+  };
+
+  const handleOpenDirect = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    hapticFeedback("medium");
+    if (app.url) openAppUrl(app.url);
   };
 
   return (
@@ -45,15 +66,31 @@ export const AppCard = ({ app }: any) => {
             inMyApps ? "bg-[#007AFF] text-white" : "bg-white/60 dark:bg-gray-700/60 text-gray-500 dark:text-gray-400 border border-white/40 dark:border-gray-600/40"
           }`}
         >
-          <Plus size={18} strokeWidth={2.5} />
+          {inMyApps ? (
+            <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" className="shrink-0" aria-hidden>
+              <path d="M20 6L9 17l-5-5" />
+            </svg>
+          ) : (
+            <Plus size={18} strokeWidth={2.5} />
+          )}
         </button>
-        <Link
-          href={`/app/${app.id}`}
-          onClick={handleClick}
-          className="bg-white/60 dark:bg-gray-700/60 text-[#007AFF] px-5 py-1.5 rounded-full font-bold text-[13px] uppercase active:opacity-70 border border-white/40 dark:border-gray-600/40"
-        >
-          Открыть
-        </Link>
+        {openDirectly && app.url ? (
+          <button
+            type="button"
+            onClick={handleOpenDirect}
+            className="bg-white/60 dark:bg-gray-700/60 text-[#007AFF] px-5 py-1.5 rounded-full font-bold text-[13px] uppercase active:opacity-70 border border-white/40 dark:border-gray-600/40"
+          >
+            Открыть
+          </button>
+        ) : (
+          <Link
+            href={`/app/${app.id}`}
+            onClick={handleClick}
+            className="bg-white/60 dark:bg-gray-700/60 text-[#007AFF] px-5 py-1.5 rounded-full font-bold text-[13px] uppercase active:opacity-70 border border-white/40 dark:border-gray-600/40"
+          >
+            Открыть
+          </Link>
+        )}
       </div>
     </div>
   );
