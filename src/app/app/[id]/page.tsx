@@ -59,7 +59,7 @@ export default function AppDetail() {
 
   return (
     <div className="min-h-screen pb-10 font-sans antialiased bg-transparent">
-      <div className="pt-[calc(0.5rem+env(safe-area-inset-top,0px)+1rem)] px-4 pb-2 flex justify-between items-center bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl sticky top-0 z-50 border-b border-white/20 dark:border-gray-700/50">
+      <div className="pt-[calc(0.25rem+env(safe-area-inset-top,0px)+0.75rem)] px-4 pb-1.5 flex justify-between items-center bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl sticky top-0 z-50 border-b border-white/20 dark:border-gray-700/50 shrink-0">
         <button onClick={handleBack} className="text-[#007AFF] flex items-center gap-0 font-normal text-[17px]">
           <ChevronLeft size={32} strokeWidth={2} /> 
           <span className="-ml-1">Назад</span>
@@ -69,7 +69,7 @@ export default function AppDetail() {
         </button>
       </div>
 
-      <div className="mx-3 mt-1 rounded-2xl bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border border-white/40 dark:border-gray-600/40 pb-6 overflow-hidden">
+      <div className="mx-3 mt-4 rounded-2xl bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border border-white/40 dark:border-gray-600/40 pb-6 overflow-hidden">
         <div className="px-5 flex gap-5 mt-4">
           <div className="relative shrink-0">
             <img src={app.icon} className="w-28 h-28 rounded-[22%] shadow-lg border border-white/40 dark:border-gray-600/40 object-cover" alt={app.name} />
