@@ -75,7 +75,7 @@ function toChannel(row: ChannelRow) {
     description: row.description || "",
     rating: row.rating ?? 0,
     isVerified: Boolean(row.is_verified),
-    screenshots: parseScreenshots(row.screenshots_path),
+    screenshots: parseScreenshots(row.screenshots_path ?? null),
   };
 }
 
