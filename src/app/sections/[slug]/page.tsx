@@ -43,7 +43,7 @@ export default function SectionPage() {
 
   return (
     <div className="min-h-screen pb-24 bg-transparent">
-      <div className="sticky top-0 z-10 flex items-center gap-2 p-4 bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl border-b border-white/20 dark:border-gray-700/50">
+      <div className="sticky top-0 z-10 flex items-center gap-2 pt-[calc(env(safe-area-inset-top,0px)+1rem)] px-4 pb-4 bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl border-b border-white/20 dark:border-gray-700/50">
         <button
           onClick={() => {
             hapticFeedback("light");

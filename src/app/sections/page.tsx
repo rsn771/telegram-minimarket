@@ -7,7 +7,7 @@ import { hapticFeedback } from "@/utils/telegram";
 
 export default function SectionsPage() {
   return (
-    <div className="min-h-screen pb-24 bg-transparent">
+    <div className="min-h-screen pb-24 bg-transparent pt-[calc(env(safe-area-inset-top,0px)+3rem)]">
       <header className="p-5 pt-6">
         <h1 className="text-[34px] font-bold tracking-tight text-black dark:text-white">Разделы</h1>
       </header>
