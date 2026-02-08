@@ -40,35 +40,38 @@ export function MyAppsProvider({ children }: { children: React.ReactNode }) {
     setMyAppIds(loadFromStorage());
   }, []);
 
-  const persist = useCallback((ids: string[]) => {
-    setMyAppIds(ids);
-    saveToStorage(ids);
+  const addApp = useCallback((id: string) => {
+    const sid = String(id);
+    setMyAppIds((prev) => {
+      const next = [...new Set([...prev, sid])];
+      saveToStorage(next);
+      return next;
+    });
   }, []);
 
-  const addApp = useCallback(
-    (id: string) => {
-      persist([...new Set([...myAppIds, id])]);
-    },
-    [myAppIds, persist]
-  );
-
-  const removeApp = useCallback(
-    (id: string) => {
-      persist(myAppIds.filter((x) => x !== id));
-    },
-    [myAppIds, persist]
-  );
+  const removeApp = useCallback((id: string) => {
+    const sid = String(id);
+    setMyAppIds((prev) => {
+      const next = prev.filter((x) => x !== sid);
+      saveToStorage(next);
+      return next;
+    });
+  }, []);
 
   const toggleApp = useCallback(
     (id: string) => {
-      if (myAppIds.includes(id)) removeApp(id);
-      else addApp(id);
+      const sid = String(id);
+      setMyAppIds((prev) => {
+        const next = prev.includes(sid) ? prev.filter((x) => x !== sid) : [...prev, sid];
+        saveToStorage(next);
+        return next;
+      });
     },
-    [myAppIds, addApp, removeApp]
+    []
   );
 
   const isInMyApps = useCallback(
-    (id: string) => myAppIds.includes(id),
+    (id: string) => myAppIds.includes(String(id)),
     [myAppIds]
   );
 
