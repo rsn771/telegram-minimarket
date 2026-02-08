@@ -54,7 +54,7 @@ export default function AppDetail() {
 
   return (
     <div className="min-h-screen pb-10 font-sans antialiased bg-transparent">
-      <div className="p-4 flex justify-between items-center bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl sticky top-0 z-50 border-b border-white/20 dark:border-gray-700/50">
+      <div className="pt-[calc(1rem+env(safe-area-inset-top,0px)+2.5rem)] px-4 pb-4 flex justify-between items-center bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl sticky top-0 z-50 border-b border-white/20 dark:border-gray-700/50">
         <button onClick={handleBack} className="text-[#007AFF] flex items-center gap-0 font-normal text-[17px]">
           <ChevronLeft size={32} strokeWidth={2} /> 
           <span className="-ml-1">Назад</span>
@@ -164,7 +164,7 @@ export default function AppDetail() {
           aria-label="Просмотр скриншота"
           onClick={closeScreenshot}
         >
-          <div className="flex items-center gap-2 pt-[calc(1rem+env(safe-area-inset-top,0px))] px-4 pb-4 bg-black/50 border-b border-white/10 shrink-0">
+          <div className="flex items-center gap-2 pt-[calc(1rem+env(safe-area-inset-top,0px)+2.5rem)] px-4 pb-4 bg-black/50 border-b border-white/10 shrink-0">
             <button
               type="button"
               onClick={closeScreenshot}
