@@ -129,6 +129,15 @@ export function TelegramWebApp() {
       
       // Разворачиваем приложение на весь экран
       tg.expand();
+
+      // Отключаем сворачивание жестом вниз — закрытие только кнопкой «Закрыть»
+      try {
+        if (typeof (tg as { disableVerticalSwipes?: () => void }).disableVerticalSwipes === "function") {
+          (tg as { disableVerticalSwipes: () => void }).disableVerticalSwipes();
+        }
+      } catch {
+        // Игнорируем, если метод недоступен
+      }
       
       // Настройка цветовой схемы (если методы доступны)
       try {
