@@ -1,4 +1,5 @@
 "use client";
+import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ChevronLeft, Star, Share, ShieldCheck, Zap, Plus } from "lucide-react";
 import { hapticFeedback } from "@/utils/telegram";
@@ -10,6 +11,7 @@ export default function AppDetail() {
   const router = useRouter();
   const { getAppById, loading } = useApps();
   const { toggleApp, isInMyApps } = useMyApps();
+  const [fullscreenScreenshotIndex, setFullscreenScreenshotIndex] = useState<number | null>(null);
   const app = typeof id === "string" ? getAppById(id) : undefined;
 
   if (loading) return <div className="p-10 text-center font-sans text-black dark:text-white bg-transparent">Загрузка…</div>;
@@ -38,6 +40,16 @@ export default function AppDetail() {
   const handlePlus = () => {
     hapticFeedback("light");
     toggleApp(app.id);
+  };
+
+  const openScreenshot = (index: number) => {
+    hapticFeedback("light");
+    setFullscreenScreenshotIndex(index);
+  };
+
+  const closeScreenshot = () => {
+    hapticFeedback("light");
+    setFullscreenScreenshotIndex(null);
   };
 
   return (
@@ -103,11 +115,16 @@ export default function AppDetail() {
       {app.screenshots && app.screenshots.length > 0 && (
         <div className="mt-3 mx-3 rounded-2xl bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border border-white/40 dark:border-gray-600/40 py-6 overflow-hidden">
           <h2 className="px-5 text-[20px] font-bold mb-4 tracking-tight text-black dark:text-white">Предпросмотр</h2>
-          <div className="flex gap-4 overflow-x-auto px-5 no-scrollbar">
+          <div className="flex gap-4 overflow-x-auto px-5 no-scrollbar items-end">
             {app.screenshots.map((src, i) => (
-              <div key={i} className="min-w-[260px] h-[460px] rounded-[2.5rem] flex-shrink-0 shadow-xl overflow-hidden relative border-[6px] border-black/20 dark:border-gray-600 bg-gray-100 dark:bg-gray-700">
-                <img src={src} alt="" className="w-full h-full object-cover" />
-              </div>
+              <button
+                key={i}
+                type="button"
+                onClick={() => openScreenshot(i)}
+                className="flex-shrink-0 rounded-xl overflow-hidden shadow-lg border border-white/40 dark:border-gray-600/40 bg-gray-100 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:ring-offset-2 dark:focus:ring-offset-gray-900 active:opacity-90"
+              >
+                <img src={src} alt={`Скриншот ${i + 1}`} className="max-h-[420px] w-auto object-contain block" />
+              </button>
             ))}
           </div>
         </div>
@@ -138,6 +155,40 @@ export default function AppDetail() {
           {app.description || "Описание пока не добавлено."}
         </p>
       </div>
+
+      {app.screenshots && fullscreenScreenshotIndex !== null && app.screenshots[fullscreenScreenshotIndex] && (
+        <div
+          className="fixed inset-0 z-[100] bg-black/95 flex flex-col"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Просмотр скриншота"
+          onClick={closeScreenshot}
+        >
+          <div className="flex items-center gap-2 p-4 bg-black/50 border-b border-white/10 shrink-0">
+            <button
+              type="button"
+              onClick={closeScreenshot}
+              className="flex items-center gap-0 text-white font-normal text-[17px] py-2 pr-3 -ml-1"
+            >
+              <ChevronLeft size={28} strokeWidth={2} />
+              <span className="-ml-1">Назад</span>
+            </button>
+            <span className="text-white/70 text-sm">
+              {fullscreenScreenshotIndex + 1} / {app.screenshots.length}
+            </span>
+          </div>
+          <div
+            className="flex-1 flex items-center justify-center min-h-0 p-4 overflow-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={app.screenshots[fullscreenScreenshotIndex]}
+              alt={`Скриншот ${fullscreenScreenshotIndex + 1}`}
+              className="max-w-full max-h-full w-auto h-auto object-contain rounded-lg"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
