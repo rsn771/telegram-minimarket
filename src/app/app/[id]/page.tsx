@@ -58,7 +58,7 @@ export default function AppDetail() {
   };
 
   return (
-    <div className="min-h-screen pb-24 font-sans antialiased bg-transparent">
+    <div className="min-h-screen pb-10 font-sans antialiased bg-transparent">
       <div className="pt-[calc(0.5rem+env(safe-area-inset-top,0px)+1rem)] px-4 pb-2 flex justify-between items-center bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl sticky top-0 z-50 border-b border-white/20 dark:border-gray-700/50">
         <button onClick={handleBack} className="text-[#007AFF] flex items-center gap-0 font-normal text-[17px]">
           <ChevronLeft size={32} strokeWidth={2} /> 
@@ -159,24 +159,6 @@ export default function AppDetail() {
         <p className="text-gray-600 dark:text-gray-300 leading-[1.5] text-[16px] font-normal whitespace-pre-line">
           {app.description || "Описание пока не добавлено."}
         </p>
-      </div>
-
-      {/* Фиксированная нижняя панель: не прокручивается */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-center gap-4 py-4 px-4 bg-gray-900/95 dark:bg-gray-950/95 backdrop-blur-xl border-t border-white/10 dark:border-gray-700/50 safe-area-pb">
-        <button
-          type="button"
-          onClick={handleBack}
-          className="flex-1 max-w-[160px] py-3.5 rounded-xl font-semibold text-[15px] bg-white/15 dark:bg-white/10 text-white border border-white/20 dark:border-white/10 active:opacity-80"
-        >
-          Закрыть
-        </button>
-        <button
-          type="button"
-          onClick={handleOpen}
-          className="flex-1 max-w-[160px] py-3.5 rounded-xl font-semibold text-[15px] bg-[#007AFF] text-white border-0 active:opacity-90"
-        >
-          Открыть
-        </button>
       </div>
 
       {app.screenshots && fullscreenScreenshotIndex !== null && app.screenshots[fullscreenScreenshotIndex] && (
