@@ -164,7 +164,7 @@ export default function AppDetail() {
           aria-label="Просмотр скриншота"
           onClick={closeScreenshot}
         >
-          <div className="flex items-center gap-2 p-4 bg-black/50 border-b border-white/10 shrink-0">
+          <div className="flex items-center gap-2 pt-[calc(1rem+env(safe-area-inset-top,0px))] px-4 pb-4 bg-black/50 border-b border-white/10 shrink-0">
             <button
               type="button"
               onClick={closeScreenshot}
