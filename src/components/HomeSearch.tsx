@@ -126,7 +126,7 @@ export function HomeSearch() {
         <h1 className="text-[34px] font-bold tracking-tight text-black dark:text-white">Сегодня</h1>
         <div className="w-full mt-3 overflow-hidden rounded-2xl bg-white/40 dark:bg-gray-800/40 backdrop-blur-md border border-white/30 dark:border-gray-600/30">
           <img
-            src="/logo-main.png"
+            src="/image123.png"
             alt="Mini Market"
             className="w-full h-auto object-contain object-left block"
           />
@@ -143,6 +143,13 @@ export function HomeSearch() {
           {(query.trim() ? matches : apps).map((app) => (
             <AppCard key={app.id} app={app} />
           ))}
+        </div>
+        <div className="w-full mt-4 mx-5 overflow-hidden rounded-2xl bg-white/40 dark:bg-gray-800/40 backdrop-blur-md border border-white/30 dark:border-gray-600/30">
+          <img
+            src="/image99.png"
+            alt="Mini Market"
+            className="w-full h-auto object-contain object-left block"
+          />
         </div>
       </section>
 
