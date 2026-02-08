@@ -132,8 +132,9 @@ export function TelegramWebApp() {
 
       // Отключаем сворачивание жестом вниз — закрытие только кнопкой «Закрыть»
       try {
-        if (typeof (tg as { disableVerticalSwipes?: () => void }).disableVerticalSwipes === "function") {
-          (tg as { disableVerticalSwipes: () => void }).disableVerticalSwipes();
+        const tgAny = tg as unknown as { disableVerticalSwipes?: () => void };
+        if (typeof tgAny.disableVerticalSwipes === "function") {
+          tgAny.disableVerticalSwipes();
         }
       } catch {
         // Игнорируем, если метод недоступен
