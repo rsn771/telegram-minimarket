@@ -6,6 +6,15 @@ import fs from "fs";
 const DB_DIR = path.join(process.cwd(), "database");
 const DB_PATH = path.join(DB_DIR, "telegram_channels.db");
 
+// Проверяем, что better-sqlite3 доступен
+let sqliteAvailable = true;
+try {
+  require.resolve("better-sqlite3");
+} catch {
+  sqliteAvailable = false;
+  console.warn("better-sqlite3 not available, database operations will fail");
+}
+
 function getIconUrl(icon: string | null): string {
   if (!icon) return "https://api.dicebear.com/7.x/shapes/svg?seed=default";
   if (icon.startsWith("http://") || icon.startsWith("https://")) return icon;
@@ -150,6 +159,18 @@ function toChannel(row: ChannelRow, db?: Database.Database) {
 export async function GET(request: Request) {
   let db: Database.Database | undefined = undefined;
   try {
+    // Проверяем доступность SQLite
+    if (!sqliteAvailable) {
+      console.error("better-sqlite3 is not available");
+      return NextResponse.json(
+        {
+          error: "База данных недоступна",
+          details: "Модуль better-sqlite3 не загружен",
+        },
+        { status: 500 }
+      );
+    }
+    
     // Логируем информацию о среде выполнения
     console.log("API channels GET called");
     console.log("DB_PATH:", DB_PATH);
