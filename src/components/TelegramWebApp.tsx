@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { preloadAppOpenSound, playAppOpenSound } from "@/utils/sounds";
 
 declare global {
   interface Window {
@@ -123,6 +124,9 @@ export function TelegramWebApp() {
   useEffect(() => {
     if (typeof window !== "undefined" && window.Telegram?.WebApp) {
       const tg = window.Telegram.WebApp;
+
+      // Предзагружаем звук открытия, чтобы не было задержки при первом запуске
+      preloadAppOpenSound();
       
       // Инициализация Telegram Web App
       tg.ready();
@@ -138,6 +142,13 @@ export function TelegramWebApp() {
         }
       } catch {
         // Игнорируем, если метод недоступен
+      }
+
+      // Звук при открытии мини-приложения
+      try {
+        playAppOpenSound();
+      } catch {
+        // Если Audio недоступен или play заблокирован — просто игнорируем
       }
 
       // Запрашиваем полноэкранный режим, если доступен (Bot API 8.0+)
