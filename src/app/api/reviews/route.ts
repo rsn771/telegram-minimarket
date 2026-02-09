@@ -3,18 +3,13 @@ import Database from "better-sqlite3";
 import path from "path";
 import fs from "fs";
 
-// Условный импорт KV (только если доступен)
-let kv: any = null;
-try {
-  const kvModule = require("@vercel/kv");
-  kv = kvModule.kv;
-} catch {
-  // Пакет не установлен локально, будет использоваться SQLite
-}
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 const DB_DIR = path.join(process.cwd(), "database");
 const IS_VERCEL = !!process.env.VERCEL;
-const USE_KV = IS_VERCEL && !!process.env.KV_REST_API_URL && !!process.env.KV_REST_API_TOKEN;
+const USE_KV =
+  IS_VERCEL && !!process.env.KV_REST_API_URL && !!process.env.KV_REST_API_TOKEN;
 // Локально работаем с SQLite файлом в репозитории, на Vercel используем KV для постоянного хранения
 const RUNTIME_REVIEWS_DIR = IS_VERCEL ? process.env.TMPDIR || "/tmp" : DB_DIR;
 const REVIEWS_DB_PATH = path.join(RUNTIME_REVIEWS_DIR, "reviews.db");
@@ -31,6 +26,16 @@ type Review = {
   text: string;
   createdAt: string;
 };
+
+async function getKvClient(): Promise<null | { get: (key: string) => Promise<any>; set: (key: string, value: any) => Promise<any> }> {
+  if (!USE_KV) return null;
+  try {
+    const mod = await import("@vercel/kv");
+    return mod.kv as any;
+  } catch {
+    return null;
+  }
+}
 
 // Работа с SQLite (локально)
 function ensureReviewsDbExists(): void {
@@ -99,11 +104,10 @@ async function saveReviewToSQLite(review: { idminiapp: string; rating: number; t
 
 // Получение всех отзывов из KV
 async function getAllReviewsFromKV(): Promise<Review[]> {
-  if (!kv) {
-    return [];
-  }
+  const kv = await getKvClient();
+  if (!kv) return [];
   try {
-    const reviews = await (kv as any).get<Review[]>(KV_REVIEWS_KEY);
+    const reviews = (await kv.get(KV_REVIEWS_KEY)) as Review[] | null;
     return reviews || [];
   } catch (error) {
     console.error("Error getting reviews from KV:", error);
@@ -121,9 +125,8 @@ async function getReviewsFromKV(idminiapp: string): Promise<Review[]> {
 
 // Сохранение отзыва в KV
 async function saveReviewToKV(review: { idminiapp: string; rating: number; text: string }): Promise<Review> {
-  if (!kv) {
-    throw new Error("KV is not available");
-  }
+  const kv = await getKvClient();
+  if (!kv) throw new Error("KV is not available");
   
   const allReviews = await getAllReviewsFromKV();
   
@@ -142,7 +145,7 @@ async function saveReviewToKV(review: { idminiapp: string; rating: number; text:
 
   // Добавляем новый отзыв и сохраняем обратно в KV
   allReviews.push(newReview);
-  await (kv as any).set(KV_REVIEWS_KEY, allReviews);
+  await kv.set(KV_REVIEWS_KEY, allReviews);
 
   return newReview;
 }

@@ -3,14 +3,8 @@ import Database from "better-sqlite3";
 import path from "path";
 import fs from "fs";
 
-// Условный импорт KV (только если доступен)
-let kv: any = null;
-try {
-  const kvModule = require("@vercel/kv");
-  kv = kvModule.kv;
-} catch {
-  // Пакет не установлен локально, будет использоваться SQLite
-}
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 const DB_DIR = path.join(process.cwd(), "database");
 const IS_VERCEL = !!process.env.VERCEL;
@@ -20,6 +14,16 @@ const RUNTIME_REVIEWS_DIR = IS_VERCEL ? process.env.TMPDIR || "/tmp" : DB_DIR;
 const DB_PATH = path.join(DB_DIR, "telegram_channels.db");
 const REVIEWS_DB_PATH = path.join(RUNTIME_REVIEWS_DIR, "reviews.db");
 const KV_REVIEWS_KEY = "reviews:all";
+
+async function getKvClient(): Promise<null | { get: (key: string) => Promise<any> }> {
+  if (!USE_KV) return null;
+  try {
+    const mod = await import("@vercel/kv");
+    return mod.kv as any;
+  } catch {
+    return null;
+  }
+}
 
 // Проверяем, что better-sqlite3 доступен
 let sqliteAvailable = true;
@@ -129,10 +133,11 @@ async function calculateRatingFromReviews(idminiapp: string): Promise<number> {
   try {
     let reviews: { rating: number }[] = [];
 
-    if (USE_KV && kv) {
+    const kv = await getKvClient();
+    if (kv) {
       // Читаем из KV
       try {
-        const allReviews = await (kv as any).get<Array<{ idminiapp: string; rating: number }>>(KV_REVIEWS_KEY);
+        const allReviews = (await kv.get(KV_REVIEWS_KEY)) as Array<{ idminiapp: string; rating: number }> | null;
         if (allReviews) {
           reviews = allReviews
             .filter((r) => r.idminiapp === idminiapp)
