@@ -5,6 +5,7 @@ import fs from "fs";
 
 const DB_DIR = path.join(process.cwd(), "database");
 const DB_PATH = path.join(DB_DIR, "telegram_channels.db");
+const REVIEWS_DB_PATH = path.join(DB_DIR, "reviews.db");
 
 // Проверяем, что better-sqlite3 доступен
 let sqliteAvailable = true;
@@ -49,12 +50,8 @@ function ensureDbExists(): void {
       fs.mkdirSync(DB_DIR, { recursive: true });
     }
     
-    // Проверяем существование файла БД
-    const dbExists = fs.existsSync(DB_PATH);
-    
+    // Создаем БД для каналов
     const db = new Database(DB_PATH);
-    
-    // Создаем таблицы только если БД не существовала или если таблиц нет
     db.exec(`
       CREATE TABLE IF NOT EXISTS channels (
         idminiapp TEXT PRIMARY KEY,
@@ -67,19 +64,10 @@ function ensureDbExists(): void {
         category TEXT DEFAULT 'Утилиты',
         screenshots_path TEXT
       );
-      CREATE TABLE IF NOT EXISTS reviews (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        idminiapp TEXT NOT NULL,
-        username TEXT NOT NULL DEFAULT 'Пользователь',
-        rating INTEGER NOT NULL CHECK(rating >= 1 AND rating <= 5),
-        text TEXT NOT NULL,
-        created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
-        FOREIGN KEY (idminiapp) REFERENCES channels(idminiapp)
-      );
     `);
     db.close();
   } catch (error) {
-    console.error("Error ensuring database exists:", error);
+    console.error("Error ensuring channels database exists:", error);
     throw error;
   }
 }
@@ -95,53 +83,68 @@ function ensureColumns(db: Database.Database) {
   }
 }
 
-function ensureReviewsTable(db: Database.Database) {
-  const tables = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='reviews'").get() as { name: string } | undefined;
-  if (!tables) {
-    db.exec(`
+function ensureReviewsDbExists(): void {
+  try {
+    if (!fs.existsSync(DB_DIR)) {
+      fs.mkdirSync(DB_DIR, { recursive: true });
+    }
+    
+    const reviewsDb = new Database(REVIEWS_DB_PATH);
+    reviewsDb.exec(`
       CREATE TABLE IF NOT EXISTS reviews (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         idminiapp TEXT NOT NULL,
         username TEXT NOT NULL DEFAULT 'Пользователь',
         rating INTEGER NOT NULL CHECK(rating >= 1 AND rating <= 5),
         text TEXT NOT NULL,
-        created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
-        FOREIGN KEY (idminiapp) REFERENCES channels(idminiapp)
+        created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
       );
     `);
+    reviewsDb.close();
+  } catch (error) {
+    console.error("Error ensuring reviews database exists:", error);
+    // Не бросаем ошибку, чтобы не блокировать работу с каналами
   }
 }
 
 /**
  * Вычисляет средний рейтинг из отзывов для приложения
  * Округляет до десятых (1 знак после запятой)
+ * Использует отдельную БД для отзывов
  */
-function calculateRatingFromReviews(db: Database.Database, idminiapp: string): number {
-  const reviews = db.prepare(`
-    SELECT rating FROM reviews WHERE idminiapp = ?
-  `).all(idminiapp) as { rating: number }[];
+function calculateRatingFromReviews(idminiapp: string): number {
+  try {
+    if (!fs.existsSync(REVIEWS_DB_PATH)) {
+      return 0;
+    }
+    
+    const reviewsDb = new Database(REVIEWS_DB_PATH, { readonly: true });
+    const reviews = reviewsDb.prepare(`
+      SELECT rating FROM reviews WHERE idminiapp = ?
+    `).all(idminiapp) as { rating: number }[];
+    reviewsDb.close();
 
-  if (reviews.length === 0) {
+    if (reviews.length === 0) {
+      return 0;
+    }
+
+    // Вычисляем среднее значение
+    const sum = reviews.reduce((acc, review) => acc + review.rating, 0);
+    const average = sum / reviews.length;
+    
+    // Округляем до десятых (1 знак после запятой)
+    return Math.round(average * 10) / 10;
+  } catch (error) {
+    console.error("Error calculating rating from reviews:", error);
     return 0;
   }
-
-  // Вычисляем среднее значение
-  const sum = reviews.reduce((acc, review) => acc + review.rating, 0);
-  const average = sum / reviews.length;
-  
-  // Округляем до десятых (1 знак после запятой)
-  return Math.round(average * 10) / 10;
 }
 
-function toChannel(row: ChannelRow, db?: Database.Database) {
-  // Если передан db, вычисляем рейтинг из отзывов для актуальности
-  // Иначе используем значение из БД (которое должно быть обновлено при добавлении отзывов)
-  let rating = row.rating ?? 0;
-  if (db) {
-    const calculatedRating = calculateRatingFromReviews(db, row.idminiapp);
-    // Всегда используем вычисленный рейтинг из отзывов для актуальности
-    rating = calculatedRating;
-  }
+function toChannel(row: ChannelRow) {
+  // Вычисляем рейтинг из отдельной БД отзывов
+  const calculatedRating = calculateRatingFromReviews(row.idminiapp);
+  // Используем вычисленный рейтинг из отзывов, если он есть, иначе значение из БД
+  const rating = calculatedRating > 0 ? calculatedRating : (row.rating ?? 0);
 
   return {
     id: String(row.idminiapp),
@@ -239,10 +242,16 @@ export async function GET(request: Request) {
     // Пытаемся обновить структуру БД только если не в readonly режиме
     try {
       ensureColumns(db);
-      ensureReviewsTable(db); // Убеждаемся, что таблица reviews существует
     } catch (schemaError) {
       // Игнорируем ошибки схемы в readonly режиме - таблицы должны уже существовать
       console.warn("Could not update schema (readonly mode?):", schemaError);
+    }
+    
+    // Убеждаемся, что БД отзывов существует (не блокируем работу, если не получится)
+    try {
+      ensureReviewsDbExists();
+    } catch (reviewsDbError) {
+      console.warn("Could not ensure reviews database exists:", reviewsDbError);
     }
 
     const selectCols =
@@ -260,7 +269,7 @@ export async function GET(request: Request) {
         return NextResponse.json({ error: "Канал не найден" }, { status: 404 });
       }
 
-      const channel = toChannel(row, db);
+      const channel = toChannel(row);
       if (db) {
         db.close();
       }
@@ -281,7 +290,7 @@ export async function GET(request: Request) {
 
     console.log(`Found ${rows.length} channels`);
 
-    const channels = rows.map((row) => toChannel(row, db));
+    const channels = rows.map((row) => toChannel(row));
     if (db) {
       db.close();
     }

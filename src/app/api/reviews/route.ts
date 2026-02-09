@@ -4,41 +4,15 @@ import path from "path";
 import fs from "fs";
 
 const DB_DIR = path.join(process.cwd(), "database");
-const DB_PATH = path.join(DB_DIR, "telegram_channels.db");
+const REVIEWS_DB_PATH = path.join(DB_DIR, "reviews.db");
+const CHANNELS_DB_PATH = path.join(DB_DIR, "telegram_channels.db");
 
-function ensureDbExists(): void {
-  if (!fs.existsSync(DB_PATH)) {
-    fs.mkdirSync(DB_DIR, { recursive: true });
-  }
-  const db = new Database(DB_PATH);
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS channels (
-      idminiapp TEXT PRIMARY KEY,
-      title TEXT NOT NULL,
-      description TEXT,
-      icon TEXT,
-      url TEXT,
-      is_verified INTEGER DEFAULT 0,
-      rating REAL DEFAULT 0,
-      category TEXT DEFAULT 'Утилиты',
-      screenshots_path TEXT
-    );
-    CREATE TABLE IF NOT EXISTS reviews (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      idminiapp TEXT NOT NULL,
-      username TEXT NOT NULL DEFAULT 'Пользователь',
-      rating INTEGER NOT NULL CHECK(rating >= 1 AND rating <= 5),
-      text TEXT NOT NULL,
-      created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
-      FOREIGN KEY (idminiapp) REFERENCES channels(idminiapp)
-    );
-  `);
-  db.close();
-}
-
-function ensureReviewsTable(db: Database.Database) {
-  const tables = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='reviews'").get() as { name: string } | undefined;
-  if (!tables) {
+function ensureReviewsDbExists(): void {
+  try {
+    if (!fs.existsSync(DB_DIR)) {
+      fs.mkdirSync(DB_DIR, { recursive: true });
+    }
+    const db = new Database(REVIEWS_DB_PATH);
     db.exec(`
       CREATE TABLE IF NOT EXISTS reviews (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -46,37 +20,63 @@ function ensureReviewsTable(db: Database.Database) {
         username TEXT NOT NULL DEFAULT 'Пользователь',
         rating INTEGER NOT NULL CHECK(rating >= 1 AND rating <= 5),
         text TEXT NOT NULL,
-        created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
-        FOREIGN KEY (idminiapp) REFERENCES channels(idminiapp)
+        created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
       );
     `);
+    db.close();
+  } catch (error) {
+    console.error("Error ensuring reviews database exists:", error);
+    throw error;
   }
 }
+
+// Функция удалена, теперь используем ensureReviewsDbExists()
 
 /**
  * Вычисляет средний рейтинг из отзывов для приложения и обновляет его в таблице channels
  * Округляет до десятых (1 знак после запятой)
+ * Использует отдельные БД для отзывов и каналов
  */
-function updateAppRating(db: Database.Database, idminiapp: string): void {
-  const reviews = db.prepare(`
-    SELECT rating FROM reviews WHERE idminiapp = ?
-  `).all(idminiapp) as { rating: number }[];
+function updateAppRating(idminiapp: string): void {
+  try {
+    // Читаем отзывы из БД отзывов
+    if (!fs.existsSync(REVIEWS_DB_PATH)) {
+      return;
+    }
+    
+    const reviewsDb = new Database(REVIEWS_DB_PATH, { readonly: true });
+    const reviews = reviewsDb.prepare(`
+      SELECT rating FROM reviews WHERE idminiapp = ?
+    `).all(idminiapp) as { rating: number }[];
+    reviewsDb.close();
 
-  if (reviews.length === 0) {
-    // Если нет отзывов, устанавливаем рейтинг в 0
-    db.prepare("UPDATE channels SET rating = 0 WHERE idminiapp = ?").run(idminiapp);
-    return;
+    if (reviews.length === 0) {
+      // Если нет отзывов, устанавливаем рейтинг в 0
+      if (fs.existsSync(CHANNELS_DB_PATH)) {
+        const channelsDb = new Database(CHANNELS_DB_PATH, { readonly: false });
+        channelsDb.prepare("UPDATE channels SET rating = 0 WHERE idminiapp = ?").run(idminiapp);
+        channelsDb.close();
+      }
+      return;
+    }
+
+    // Вычисляем среднее значение
+    const sum = reviews.reduce((acc, review) => acc + review.rating, 0);
+    const average = sum / reviews.length;
+    
+    // Округляем до десятых (1 знак после запятой)
+    const roundedRating = Math.round(average * 10) / 10;
+
+    // Обновляем рейтинг в БД каналов
+    if (fs.existsSync(CHANNELS_DB_PATH)) {
+      const channelsDb = new Database(CHANNELS_DB_PATH, { readonly: false });
+      channelsDb.prepare("UPDATE channels SET rating = ? WHERE idminiapp = ?").run(roundedRating, idminiapp);
+      channelsDb.close();
+    }
+  } catch (error) {
+    console.error("Error updating app rating:", error);
+    // Не бросаем ошибку, чтобы не блокировать добавление отзыва
   }
-
-  // Вычисляем среднее значение
-  const sum = reviews.reduce((acc, review) => acc + review.rating, 0);
-  const average = sum / reviews.length;
-  
-  // Округляем до десятых (1 знак после запятой)
-  const roundedRating = Math.round(average * 10) / 10;
-
-  // Обновляем рейтинг в таблице channels
-  db.prepare("UPDATE channels SET rating = ? WHERE idminiapp = ?").run(roundedRating, idminiapp);
 }
 
 type ReviewRow = {
@@ -101,7 +101,7 @@ function toReview(row: ReviewRow) {
 
 export async function GET(request: Request) {
   try {
-    ensureDbExists();
+    ensureReviewsDbExists();
 
     const { searchParams } = new URL(request.url);
     const idminiapp = searchParams.get("idminiapp");
@@ -110,8 +110,11 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Не указан idminiapp" }, { status: 400 });
     }
 
-    const db = new Database(DB_PATH, { readonly: true });
-    ensureReviewsTable(db);
+    if (!fs.existsSync(REVIEWS_DB_PATH)) {
+      return NextResponse.json([]);
+    }
+
+    const db = new Database(REVIEWS_DB_PATH, { readonly: true });
 
     const rows = db.prepare(`
       SELECT id, idminiapp, username, rating, text, created_at
@@ -127,13 +130,13 @@ export async function GET(request: Request) {
     return NextResponse.json(reviews);
   } catch (err) {
     console.error("API reviews GET error:", err);
-    return NextResponse.json({ error: "Ошибка при загрузке отзывов" }, { status: 500 });
+    return NextResponse.json([]);
   }
 }
 
 export async function POST(request: Request) {
   try {
-    ensureDbExists();
+    ensureReviewsDbExists();
 
     const body = await request.json();
     const { idminiapp, rating, text } = body;
@@ -150,24 +153,30 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Текст отзыва не может быть пустым" }, { status: 400 });
     }
 
-    const db = new Database(DB_PATH, { readonly: false });
-    ensureReviewsTable(db);
-
-    // Проверяем, существует ли приложение
-    const channelExists = db.prepare("SELECT 1 FROM channels WHERE idminiapp = ?").get(idminiapp);
-    if (!channelExists) {
-      db.close();
-      return NextResponse.json({ error: "Приложение не найдено" }, { status: 404 });
+    // Проверяем, существует ли приложение в БД каналов
+    if (fs.existsSync(CHANNELS_DB_PATH)) {
+      const channelsDb = new Database(CHANNELS_DB_PATH, { readonly: true });
+      const channelExists = channelsDb.prepare("SELECT 1 FROM channels WHERE idminiapp = ?").get(idminiapp);
+      channelsDb.close();
+      
+      if (!channelExists) {
+        return NextResponse.json({ error: "Приложение не найдено" }, { status: 404 });
+      }
     }
 
-    // Добавляем отзыв
+    if (!fs.existsSync(REVIEWS_DB_PATH)) {
+      return NextResponse.json({ error: "База данных отзывов недоступна" }, { status: 500 });
+    }
+
+    // Добавляем отзыв в БД отзывов
+    const db = new Database(REVIEWS_DB_PATH, { readonly: false });
     const result = db.prepare(`
       INSERT INTO reviews (idminiapp, username, rating, text, created_at)
       VALUES (?, 'Пользователь', ?, ?, datetime('now', 'localtime'))
     `).run(idminiapp, rating, text.trim());
 
     // Обновляем рейтинг приложения на основе всех отзывов
-    updateAppRating(db, idminiapp);
+    updateAppRating(idminiapp);
 
     db.close();
 
