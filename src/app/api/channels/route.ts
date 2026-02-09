@@ -169,7 +169,14 @@ export async function GET(request: Request) {
     const search = searchParams.get("search");
 
     try {
-      db = new Database(DB_PATH, { readonly: false });
+      // Пытаемся открыть в режиме только для чтения сначала (для продакшена)
+      // Если это не сработает, пробуем в режиме записи
+      try {
+        db = new Database(DB_PATH, { readonly: true });
+      } catch (readonlyError) {
+        // Если readonly не работает, пробуем обычный режим
+        db = new Database(DB_PATH, { readonly: false });
+      }
     } catch (dbError) {
       console.error("Failed to open database:", dbError);
       return NextResponse.json(
