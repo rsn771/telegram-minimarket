@@ -34,33 +34,45 @@ type ChannelRow = {
 };
 
 function ensureDbExists(): void {
-  if (!fs.existsSync(DB_PATH)) {
-    fs.mkdirSync(DB_DIR, { recursive: true });
+  try {
+    // Создаем директорию, если её нет
+    if (!fs.existsSync(DB_DIR)) {
+      fs.mkdirSync(DB_DIR, { recursive: true });
+    }
+    
+    // Проверяем существование файла БД
+    const dbExists = fs.existsSync(DB_PATH);
+    
+    const db = new Database(DB_PATH);
+    
+    // Создаем таблицы только если БД не существовала или если таблиц нет
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS channels (
+        idminiapp TEXT PRIMARY KEY,
+        title TEXT NOT NULL,
+        description TEXT,
+        icon TEXT,
+        url TEXT,
+        is_verified INTEGER DEFAULT 0,
+        rating REAL DEFAULT 0,
+        category TEXT DEFAULT 'Утилиты',
+        screenshots_path TEXT
+      );
+      CREATE TABLE IF NOT EXISTS reviews (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        idminiapp TEXT NOT NULL,
+        username TEXT NOT NULL DEFAULT 'Пользователь',
+        rating INTEGER NOT NULL CHECK(rating >= 1 AND rating <= 5),
+        text TEXT NOT NULL,
+        created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
+        FOREIGN KEY (idminiapp) REFERENCES channels(idminiapp)
+      );
+    `);
+    db.close();
+  } catch (error) {
+    console.error("Error ensuring database exists:", error);
+    throw error;
   }
-  const db = new Database(DB_PATH);
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS channels (
-      idminiapp TEXT PRIMARY KEY,
-      title TEXT NOT NULL,
-      description TEXT,
-      icon TEXT,
-      url TEXT,
-      is_verified INTEGER DEFAULT 0,
-      rating REAL DEFAULT 0,
-      category TEXT DEFAULT 'Утилиты',
-      screenshots_path TEXT
-    );
-    CREATE TABLE IF NOT EXISTS reviews (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      idminiapp TEXT NOT NULL,
-      username TEXT NOT NULL DEFAULT 'Пользователь',
-      rating INTEGER NOT NULL CHECK(rating >= 1 AND rating <= 5),
-      text TEXT NOT NULL,
-      created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
-      FOREIGN KEY (idminiapp) REFERENCES channels(idminiapp)
-    );
-  `);
-  db.close();
 }
 
 function ensureColumns(db: Database.Database) {
@@ -136,14 +148,39 @@ function toChannel(row: ChannelRow, db?: Database.Database) {
 }
 
 export async function GET(request: Request) {
+  let db: Database.Database | null = null;
   try {
+    // Проверяем существование базы данных
+    if (!fs.existsSync(DB_PATH)) {
+      console.error(`Database file not found at: ${DB_PATH}`);
+      return NextResponse.json(
+        {
+          error: "База данных не найдена",
+          details: `Путь: ${DB_PATH}`,
+        },
+        { status: 500 }
+      );
+    }
+
     ensureDbExists();
 
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
     const search = searchParams.get("search");
 
-    const db = new Database(DB_PATH, { readonly: false });
+    try {
+      db = new Database(DB_PATH, { readonly: false });
+    } catch (dbError) {
+      console.error("Failed to open database:", dbError);
+      return NextResponse.json(
+        {
+          error: "Не удалось открыть базу данных",
+          details: dbError instanceof Error ? dbError.message : String(dbError),
+        },
+        { status: 500 }
+      );
+    }
+
     ensureColumns(db);
     ensureReviewsTable(db); // Убеждаемся, что таблица reviews существует
 
@@ -183,10 +220,17 @@ export async function GET(request: Request) {
     return NextResponse.json(channels);
   } catch (err) {
     console.error("API channels error:", err);
+    if (db) {
+      try {
+        db.close();
+      } catch (closeError) {
+        console.error("Error closing database:", closeError);
+      }
+    }
     return NextResponse.json(
       {
-        error:
-          "Ошибка при загрузке данных. Проверьте, что папка database доступна и при необходимости скопируйте telegram_channels.db.",
+        error: "Ошибка при загрузке данных",
+        details: err instanceof Error ? err.message : String(err),
       },
       { status: 500 }
     );

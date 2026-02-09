@@ -26,8 +26,20 @@ const AppsContext = createContext<AppsContextType | null>(null);
 
 async function fetchApps(): Promise<AppItem[]> {
   const res = await fetch("/api/channels");
-  if (!res.ok) throw new Error("Не удалось загрузить приложения");
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    const errorMessage = errorData.error || "Не удалось загрузить приложения";
+    console.error("API error:", errorData);
+    throw new Error(errorMessage);
+  }
   const data = await res.json();
+  
+  // Проверяем, что это массив
+  if (!Array.isArray(data)) {
+    console.error("API returned non-array data:", data);
+    throw new Error("Неверный формат данных от сервера");
+  }
+  
   return data.map(
     (c: {
       id: string;
