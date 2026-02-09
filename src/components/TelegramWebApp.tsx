@@ -140,6 +140,16 @@ export function TelegramWebApp() {
         // Игнорируем, если метод недоступен
       }
 
+      // Запрашиваем полноэкранный режим, если доступен (Bot API 8.0+)
+      try {
+        const tgFs = tg as unknown as { requestFullscreen?: () => void };
+        if (typeof tgFs.requestFullscreen === "function") {
+          tgFs.requestFullscreen();
+        }
+      } catch {
+        // Игнорируем, если метод недоступен или отклонён
+      }
+
       // Звук при открытии мини-приложения
       try {
         const audio = new Audio("/app-open.mp3");
