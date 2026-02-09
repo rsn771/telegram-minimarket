@@ -1,7 +1,7 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ChevronLeft, Star, Share, ShieldCheck, Zap, Plus } from "lucide-react";
+import { Star, ShieldCheck, Zap, Plus } from "lucide-react";
 import { hapticFeedback } from "@/utils/telegram";
 import { useApps } from "@/context/AppsContext";
 import { useMyApps } from "@/context/MyAppsContext";
@@ -33,14 +33,33 @@ export default function AppDetail() {
 
   const inMyApps = isInMyApps(String(app.id));
 
-  const handleBack = () => {
-    hapticFeedback("light");
-    router.back();
-  };
+  // Используем встроенную кнопку Telegram BackButton вместо собственной панели
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const tg = (window as unknown as { Telegram?: { WebApp?: { BackButton?: { show: () => void; hide: () => void; onClick: (cb: () => void) => void; offClick: (cb: () => void) => void } } } }).Telegram?.WebApp;
+    if (!tg?.BackButton) return;
 
-  const handleShare = () => {
-    hapticFeedback("medium");
-  };
+    const handleBackClick = () => {
+      hapticFeedback("light");
+      router.back();
+    };
+
+    try {
+      tg.BackButton.show();
+      tg.BackButton.onClick(handleBackClick);
+    } catch {
+      // игнорируем, если BackButton недоступен в окружении
+    }
+
+    return () => {
+      try {
+        tg.BackButton.offClick(handleBackClick);
+        tg.BackButton.hide();
+      } catch {
+        // игнорируем ошибки при очистке
+      }
+    };
+  }, [router]);
 
   const handleOpen = () => {
     hapticFeedback("medium");
@@ -91,17 +110,7 @@ export default function AppDetail() {
   };
 
   return (
-    <div className="min-h-screen pb-10 font-sans antialiased bg-transparent pt-[calc(env(safe-area-inset-top,0px)+56px)]">
-      <div className="fixed left-0 right-0 z-50 pt-[calc(env(safe-area-inset-top,0px)+8px)] px-4 pb-2 flex justify-between items-center bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl border-b border-white/20 dark:border-gray-700/50">
-        <button onClick={handleBack} className="text-[#007AFF] flex items-center gap-0 font-normal text-[17px]">
-          <ChevronLeft size={32} strokeWidth={2} /> 
-          <span className="-ml-1">Назад</span>
-        </button>
-        <button onClick={handleShare}>
-          <Share size={22} className="text-[#007AFF]" />
-        </button>
-      </div>
-
+    <div className="min-h-screen pb-10 font-sans antialiased bg-transparent pt-[calc(env(safe-area-inset-top,0px)+20px)]">
       <div className="mx-3 mt-4 rounded-2xl bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border border-white/40 dark:border-gray-600/40 pb-6 overflow-hidden">
         <div className="px-5 flex gap-5 mt-4">
           <div className="relative shrink-0">
