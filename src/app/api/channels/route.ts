@@ -162,13 +162,8 @@ export async function GET(request: Request) {
     // Проверяем доступность SQLite
     if (!sqliteAvailable) {
       console.error("better-sqlite3 is not available");
-      return NextResponse.json(
-        {
-          error: "База данных недоступна",
-          details: "Модуль better-sqlite3 не загружен",
-        },
-        { status: 500 }
-      );
+      // Возвращаем пустой массив вместо ошибки
+      return NextResponse.json([]);
     }
     
     // Логируем информацию о среде выполнения
@@ -195,14 +190,9 @@ export async function GET(request: Request) {
         }
       }
       
-      return NextResponse.json(
-        {
-          error: "База данных не найдена",
-          details: `Путь: ${DB_PATH}`,
-          cwd: process.cwd(),
-        },
-        { status: 500 }
-      );
+      // Возвращаем пустой массив вместо ошибки
+      console.warn("Database not found, returning empty array");
+      return NextResponse.json([]);
     }
 
     try {
@@ -241,13 +231,9 @@ export async function GET(request: Request) {
         stack: dbError instanceof Error ? dbError.stack : undefined,
         code: (dbError as any)?.code,
       });
-      return NextResponse.json(
-        {
-          error: "Не удалось открыть базу данных",
-          details: dbError instanceof Error ? dbError.message : String(dbError),
-        },
-        { status: 500 }
-      );
+      // Возвращаем пустой массив вместо ошибки
+      console.warn("Returning empty array due to database open error");
+      return NextResponse.json([]);
     }
 
     // Пытаемся обновить структуру БД только если не в readonly режиме
