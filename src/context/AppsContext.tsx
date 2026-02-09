@@ -25,44 +25,59 @@ type AppsContextType = {
 const AppsContext = createContext<AppsContextType | null>(null);
 
 async function fetchApps(): Promise<AppItem[]> {
-  const res = await fetch("/api/channels");
-  if (!res.ok) {
-    const errorData = await res.json().catch(() => ({}));
-    const errorMessage = errorData.error || "Не удалось загрузить приложения";
-    console.error("API error:", errorData);
-    throw new Error(errorMessage);
+  try {
+    const res = await fetch("/api/channels", {
+      cache: "no-store", // Отключаем кеширование для получения актуальных данных
+    });
+    
+    if (!res.ok) {
+      console.error("API response not OK:", res.status, res.statusText);
+      // Возвращаем пустой массив вместо ошибки
+      return [];
+    }
+    
+    const data = await res.json();
+    
+    // Проверяем, что это массив
+    if (!Array.isArray(data)) {
+      console.error("API returned non-array data:", data);
+      return [];
+    }
+    
+    // Если массив пустой, это нормально - просто нет данных
+    if (data.length === 0) {
+      console.warn("API returned empty array");
+      return [];
+    }
+    
+    return data.map(
+      (c: {
+        id: string;
+        name: string;
+        category: string;
+        icon: string;
+        rating: number;
+        url?: string;
+        description?: string;
+        screenshots?: string[];
+        isVerified?: boolean;
+      }) => ({
+        id: c.id,
+        name: c.name,
+        category: c.category,
+        icon: c.icon,
+        rating: c.rating,
+        url: c.url,
+        description: c.description,
+        screenshots: c.screenshots,
+        isVerified: c.isVerified,
+      })
+    );
+  } catch (error) {
+    console.error("Error fetching apps:", error);
+    // Возвращаем пустой массив вместо ошибки
+    return [];
   }
-  const data = await res.json();
-  
-  // Проверяем, что это массив
-  if (!Array.isArray(data)) {
-    console.error("API returned non-array data:", data);
-    throw new Error("Неверный формат данных от сервера");
-  }
-  
-  return data.map(
-    (c: {
-      id: string;
-      name: string;
-      category: string;
-      icon: string;
-      rating: number;
-      url?: string;
-      description?: string;
-      screenshots?: string[];
-      isVerified?: boolean;
-    }) => ({
-      id: c.id,
-      name: c.name,
-      category: c.category,
-      icon: c.icon,
-      rating: c.rating,
-      url: c.url,
-      description: c.description,
-      screenshots: c.screenshots,
-      isVerified: c.isVerified,
-    })
-  );
 }
 
 export function AppsProvider({ children }: { children: React.ReactNode }) {
