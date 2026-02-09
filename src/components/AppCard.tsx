@@ -1,10 +1,12 @@
 "use client";
 
+import { useEffect } from "react";
 import { Star, Plus } from "lucide-react";
 import Link from "next/link";
 import { hapticFeedback } from "@/utils/telegram";
 import { useMyApps } from "@/context/MyAppsContext";
 import type { AppItem } from "@/context/AppsContext";
+import { preloadPlusSound, playPlusSound } from "@/utils/sounds";
 
 function openAppUrl(url: string) {
   const w = typeof window !== "undefined" ? (window as unknown as { Telegram?: { WebApp?: { openTelegramLink?: (url: string) => void; openLink?: (url: string) => void } } }) : null;
@@ -18,21 +20,14 @@ function openAppUrl(url: string) {
   }
 }
 
-function playUiSound(path: string) {
-  if (typeof window === "undefined") return;
-  try {
-    const audio = new Audio(path);
-    audio.volume = 0.9;
-    void audio.play().catch(() => {});
-  } catch {
-    // Игнорируем ошибки воспроизведения
-  }
-}
-
 export const AppCard = ({ app, openDirectly = false }: { app: AppItem; openDirectly?: boolean }) => {
   const { toggleApp, isInMyApps } = useMyApps();
   const appId = String(app.id);
   const inMyApps = isInMyApps(appId);
+
+  useEffect(() => {
+    preloadPlusSound();
+  }, []);
 
   const handleClick = () => {
     hapticFeedback("light");
@@ -42,7 +37,7 @@ export const AppCard = ({ app, openDirectly = false }: { app: AppItem; openDirec
     e.preventDefault();
     e.stopPropagation();
     hapticFeedback("light");
-    playUiSound("/plus-chime.wav");
+    playPlusSound();
     toggleApp(appId);
   };
 

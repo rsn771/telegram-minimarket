@@ -5,17 +5,7 @@ import { ChevronLeft, Star, ShieldCheck, Zap, Plus } from "lucide-react";
 import { hapticFeedback } from "@/utils/telegram";
 import { useApps } from "@/context/AppsContext";
 import { useMyApps } from "@/context/MyAppsContext";
-
-function playUiSound(path: string) {
-  if (typeof window === "undefined") return;
-  try {
-    const audio = new Audio(path);
-    audio.volume = 0.9;
-    void audio.play().catch(() => {});
-  } catch {
-    // Игнорируем ошибки воспроизведения
-  }
-}
+import { preloadPlusSound, playPlusSound } from "@/utils/sounds";
 
 export default function AppDetail() {
   const { id } = useParams();
@@ -63,6 +53,11 @@ export default function AppDetail() {
     };
   }, [router]);
 
+  // Предзагрузка звука для плюса, чтобы не было задержки при первом нажатии
+  useEffect(() => {
+    preloadPlusSound();
+  }, []);
+
   const handleOpen = () => {
     hapticFeedback("medium");
     if (!app.url) return;
@@ -79,7 +74,7 @@ export default function AppDetail() {
 
   const handlePlus = () => {
     hapticFeedback("light");
-    playUiSound("/plus-chime.wav");
+    playPlusSound();
     toggleApp(String(app.id));
   };
 
