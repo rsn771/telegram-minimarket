@@ -150,19 +150,46 @@ function toChannel(row: ChannelRow, db?: Database.Database) {
 export async function GET(request: Request) {
   let db: Database.Database | undefined = undefined;
   try {
+    // Логируем информацию о среде выполнения
+    console.log("API channels GET called");
+    console.log("DB_PATH:", DB_PATH);
+    console.log("process.cwd():", process.cwd());
+    console.log("fs.existsSync(DB_PATH):", fs.existsSync(DB_PATH));
+    
     // Проверяем существование базы данных
     if (!fs.existsSync(DB_PATH)) {
       console.error(`Database file not found at: ${DB_PATH}`);
+      console.error("Current working directory:", process.cwd());
+      console.error("DB_DIR exists:", fs.existsSync(DB_DIR));
+      
+      // Пытаемся найти базу данных в других возможных местах
+      const altPaths = [
+        path.join(process.cwd(), "database", "telegram_channels.db"),
+        path.join("/tmp", "telegram_channels.db"),
+      ];
+      
+      for (const altPath of altPaths) {
+        if (fs.existsSync(altPath)) {
+          console.log(`Found database at alternative path: ${altPath}`);
+        }
+      }
+      
       return NextResponse.json(
         {
           error: "База данных не найдена",
           details: `Путь: ${DB_PATH}`,
+          cwd: process.cwd(),
         },
         { status: 500 }
       );
     }
 
-    ensureDbExists();
+    try {
+      ensureDbExists();
+    } catch (ensureError) {
+      console.error("Error in ensureDbExists:", ensureError);
+      // Продолжаем выполнение, возможно БД уже существует
+    }
 
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
@@ -172,13 +199,27 @@ export async function GET(request: Request) {
       // Пытаемся открыть в режиме только для чтения сначала (для продакшена)
       // Если это не сработает, пробуем в режиме записи
       try {
+        console.log("Attempting to open database in readonly mode...");
         db = new Database(DB_PATH, { readonly: true });
+        console.log("Database opened successfully in readonly mode");
       } catch (readonlyError) {
+        console.warn("Readonly mode failed, trying write mode:", readonlyError);
         // Если readonly не работает, пробуем обычный режим
-        db = new Database(DB_PATH, { readonly: false });
+        try {
+          db = new Database(DB_PATH, { readonly: false });
+          console.log("Database opened successfully in write mode");
+        } catch (writeError) {
+          console.error("Write mode also failed:", writeError);
+          throw writeError;
+        }
       }
     } catch (dbError) {
       console.error("Failed to open database:", dbError);
+      console.error("Error details:", {
+        message: dbError instanceof Error ? dbError.message : String(dbError),
+        stack: dbError instanceof Error ? dbError.stack : undefined,
+        code: (dbError as any)?.code,
+      });
       return NextResponse.json(
         {
           error: "Не удалось открыть базу данных",
@@ -231,11 +272,14 @@ export async function GET(request: Request) {
       rows = db.prepare(`SELECT ${selectCols} FROM channels`).all() as ChannelRow[];
     }
 
+    console.log(`Found ${rows.length} channels`);
+
     const channels = rows.map((row) => toChannel(row, db));
     if (db) {
       db.close();
     }
 
+    console.log(`Returning ${channels.length} channels`);
     return NextResponse.json(channels);
   } catch (err) {
     console.error("API channels error:", err);
