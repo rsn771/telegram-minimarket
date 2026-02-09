@@ -4,8 +4,11 @@ import path from "path";
 import fs from "fs";
 
 const DB_DIR = path.join(process.cwd(), "database");
+const IS_VERCEL = !!process.env.VERCEL;
+// На проде пишем/читаем отзывы из TMPDIR (/tmp), локально – из database/
+const RUNTIME_REVIEWS_DIR = IS_VERCEL ? process.env.TMPDIR || "/tmp" : DB_DIR;
 const DB_PATH = path.join(DB_DIR, "telegram_channels.db");
-const REVIEWS_DB_PATH = path.join(DB_DIR, "reviews.db");
+const REVIEWS_DB_PATH = path.join(RUNTIME_REVIEWS_DIR, "reviews.db");
 
 // Проверяем, что better-sqlite3 доступен
 let sqliteAvailable = true;
@@ -85,10 +88,9 @@ function ensureColumns(db: Database.Database) {
 
 function ensureReviewsDbExists(): void {
   try {
-    if (!fs.existsSync(DB_DIR)) {
-      fs.mkdirSync(DB_DIR, { recursive: true });
+    if (!fs.existsSync(RUNTIME_REVIEWS_DIR)) {
+      fs.mkdirSync(RUNTIME_REVIEWS_DIR, { recursive: true });
     }
-    
     const reviewsDb = new Database(REVIEWS_DB_PATH);
     reviewsDb.exec(`
       CREATE TABLE IF NOT EXISTS reviews (
@@ -117,22 +119,24 @@ function calculateRatingFromReviews(idminiapp: string): number {
     if (!fs.existsSync(REVIEWS_DB_PATH)) {
       return 0;
     }
-    
+
     const reviewsDb = new Database(REVIEWS_DB_PATH, { readonly: true });
-    const reviews = reviewsDb.prepare(`
+    const reviews = reviewsDb
+      .prepare(
+        `
       SELECT rating FROM reviews WHERE idminiapp = ?
-    `).all(idminiapp) as { rating: number }[];
+    `,
+      )
+      .all(idminiapp) as { rating: number }[];
     reviewsDb.close();
 
     if (reviews.length === 0) {
       return 0;
     }
 
-    // Вычисляем среднее значение
     const sum = reviews.reduce((acc, review) => acc + review.rating, 0);
     const average = sum / reviews.length;
-    
-    // Округляем до десятых (1 знак после запятой)
+
     return Math.round(average * 10) / 10;
   } catch (error) {
     console.error("Error calculating rating from reviews:", error);
