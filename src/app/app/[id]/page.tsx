@@ -53,8 +53,10 @@ export default function AppDetail() {
 
     return () => {
       try {
-        tg.BackButton.offClick(handleBackClick);
-        tg.BackButton.hide();
+        if (tg?.BackButton) {
+          tg.BackButton.offClick(handleBackClick);
+          tg.BackButton.hide();
+        }
       } catch {
         // игнорируем ошибки при очистке
       }
