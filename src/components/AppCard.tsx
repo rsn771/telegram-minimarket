@@ -18,6 +18,17 @@ function openAppUrl(url: string) {
   }
 }
 
+function playUiSound(path: string) {
+  if (typeof window === "undefined") return;
+  try {
+    const audio = new Audio(path);
+    audio.volume = 0.9;
+    void audio.play().catch(() => {});
+  } catch {
+    // Игнорируем ошибки воспроизведения
+  }
+}
+
 export const AppCard = ({ app, openDirectly = false }: { app: AppItem; openDirectly?: boolean }) => {
   const { toggleApp, isInMyApps } = useMyApps();
   const appId = String(app.id);
@@ -31,6 +42,7 @@ export const AppCard = ({ app, openDirectly = false }: { app: AppItem; openDirec
     e.preventDefault();
     e.stopPropagation();
     hapticFeedback("light");
+    playUiSound("/plus-chime.wav");
     toggleApp(appId);
   };
 

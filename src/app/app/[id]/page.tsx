@@ -6,6 +6,17 @@ import { hapticFeedback } from "@/utils/telegram";
 import { useApps } from "@/context/AppsContext";
 import { useMyApps } from "@/context/MyAppsContext";
 
+function playUiSound(path: string) {
+  if (typeof window === "undefined") return;
+  try {
+    const audio = new Audio(path);
+    audio.volume = 0.9;
+    void audio.play().catch(() => {});
+  } catch {
+    // Игнорируем ошибки воспроизведения
+  }
+}
+
 export default function AppDetail() {
   const { id } = useParams();
   const router = useRouter();
@@ -47,6 +58,7 @@ export default function AppDetail() {
 
   const handlePlus = () => {
     hapticFeedback("light");
+    playUiSound("/plus-chime.wav");
     toggleApp(String(app.id));
   };
 
@@ -79,8 +91,8 @@ export default function AppDetail() {
   };
 
   return (
-    <div className="min-h-screen pb-10 font-sans antialiased bg-transparent">
-      <div className="pt-[calc(0.25rem+env(safe-area-inset-top,0px)+0.75rem)] px-4 pb-1.5 flex justify-between items-center bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl sticky top-0 z-50 border-b border-white/20 dark:border-gray-700/50 shrink-0">
+    <div className="min-h-screen pb-10 font-sans antialiased bg-transparent pt-[calc(env(safe-area-inset-top,0px)+56px)]">
+      <div className="fixed left-0 right-0 z-50 pt-[calc(env(safe-area-inset-top,0px)+8px)] px-4 pb-2 flex justify-between items-center bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl border-b border-white/20 dark:border-gray-700/50">
         <button onClick={handleBack} className="text-[#007AFF] flex items-center gap-0 font-normal text-[17px]">
           <ChevronLeft size={32} strokeWidth={2} /> 
           <span className="-ml-1">Назад</span>
