@@ -148,7 +148,7 @@ function toChannel(row: ChannelRow, db?: Database.Database) {
 }
 
 export async function GET(request: Request) {
-  let db: Database.Database | null = null;
+  let db: Database.Database | undefined = undefined;
   try {
     // Проверяем существование базы данных
     if (!fs.existsSync(DB_PATH)) {
@@ -206,12 +206,16 @@ export async function GET(request: Request) {
         | undefined;
 
       if (!row) {
-        db.close();
+        if (db) {
+          db.close();
+        }
         return NextResponse.json({ error: "Канал не найден" }, { status: 404 });
       }
 
       const channel = toChannel(row, db);
-      db.close();
+      if (db) {
+        db.close();
+      }
       return NextResponse.json(channel);
     }
 
@@ -228,7 +232,9 @@ export async function GET(request: Request) {
     }
 
     const channels = rows.map((row) => toChannel(row, db));
-    db.close();
+    if (db) {
+      db.close();
+    }
 
     return NextResponse.json(channels);
   } catch (err) {
