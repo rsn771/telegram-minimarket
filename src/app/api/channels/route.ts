@@ -36,22 +36,31 @@ type ChannelRow = {
 function ensureDbExists(): void {
   if (!fs.existsSync(DB_PATH)) {
     fs.mkdirSync(DB_DIR, { recursive: true });
-    const db = new Database(DB_PATH);
-    db.exec(`
-      CREATE TABLE IF NOT EXISTS channels (
-        idminiapp TEXT PRIMARY KEY,
-        title TEXT NOT NULL,
-        description TEXT,
-        icon TEXT,
-        url TEXT,
-        is_verified INTEGER DEFAULT 0,
-        rating REAL DEFAULT 0,
-        category TEXT DEFAULT 'Утилиты',
-        screenshots_path TEXT
-      );
-    `);
-    db.close();
   }
+  const db = new Database(DB_PATH);
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS channels (
+      idminiapp TEXT PRIMARY KEY,
+      title TEXT NOT NULL,
+      description TEXT,
+      icon TEXT,
+      url TEXT,
+      is_verified INTEGER DEFAULT 0,
+      rating REAL DEFAULT 0,
+      category TEXT DEFAULT 'Утилиты',
+      screenshots_path TEXT
+    );
+    CREATE TABLE IF NOT EXISTS reviews (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      idminiapp TEXT NOT NULL,
+      username TEXT NOT NULL DEFAULT 'Пользователь',
+      rating INTEGER NOT NULL CHECK(rating >= 1 AND rating <= 5),
+      text TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
+      FOREIGN KEY (idminiapp) REFERENCES channels(idminiapp)
+    );
+  `);
+  db.close();
 }
 
 function ensureColumns(db: Database.Database) {
@@ -65,7 +74,54 @@ function ensureColumns(db: Database.Database) {
   }
 }
 
-function toChannel(row: ChannelRow) {
+function ensureReviewsTable(db: Database.Database) {
+  const tables = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='reviews'").get() as { name: string } | undefined;
+  if (!tables) {
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS reviews (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        idminiapp TEXT NOT NULL,
+        username TEXT NOT NULL DEFAULT 'Пользователь',
+        rating INTEGER NOT NULL CHECK(rating >= 1 AND rating <= 5),
+        text TEXT NOT NULL,
+        created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
+        FOREIGN KEY (idminiapp) REFERENCES channels(idminiapp)
+      );
+    `);
+  }
+}
+
+/**
+ * Вычисляет средний рейтинг из отзывов для приложения
+ * Округляет до десятых (1 знак после запятой)
+ */
+function calculateRatingFromReviews(db: Database.Database, idminiapp: string): number {
+  const reviews = db.prepare(`
+    SELECT rating FROM reviews WHERE idminiapp = ?
+  `).all(idminiapp) as { rating: number }[];
+
+  if (reviews.length === 0) {
+    return 0;
+  }
+
+  // Вычисляем среднее значение
+  const sum = reviews.reduce((acc, review) => acc + review.rating, 0);
+  const average = sum / reviews.length;
+  
+  // Округляем до десятых (1 знак после запятой)
+  return Math.round(average * 10) / 10;
+}
+
+function toChannel(row: ChannelRow, db?: Database.Database) {
+  // Если передан db, вычисляем рейтинг из отзывов для актуальности
+  // Иначе используем значение из БД (которое должно быть обновлено при добавлении отзывов)
+  let rating = row.rating ?? 0;
+  if (db) {
+    const calculatedRating = calculateRatingFromReviews(db, row.idminiapp);
+    // Всегда используем вычисленный рейтинг из отзывов для актуальности
+    rating = calculatedRating;
+  }
+
   return {
     id: String(row.idminiapp),
     name: row.title,
@@ -73,7 +129,7 @@ function toChannel(row: ChannelRow) {
     icon: getIconUrl(row.icon),
     url: row.url || "",
     description: row.description || "",
-    rating: row.rating ?? 0,
+    rating: Math.round(rating * 10) / 10, // Округляем до десятых для отображения
     isVerified: Boolean(row.is_verified),
     screenshots: parseScreenshots(row.screenshots_path ?? null),
   };
@@ -89,6 +145,7 @@ export async function GET(request: Request) {
 
     const db = new Database(DB_PATH, { readonly: false });
     ensureColumns(db);
+    ensureReviewsTable(db); // Убеждаемся, что таблица reviews существует
 
     const selectCols =
       "idminiapp, title, description, icon, url, is_verified, rating, category, screenshots_path";
@@ -98,13 +155,14 @@ export async function GET(request: Request) {
         | ChannelRow
         | undefined;
 
-      db.close();
-
       if (!row) {
+        db.close();
         return NextResponse.json({ error: "Канал не найден" }, { status: 404 });
       }
 
-      return NextResponse.json(toChannel(row));
+      const channel = toChannel(row, db);
+      db.close();
+      return NextResponse.json(channel);
     }
 
     let rows: ChannelRow[];
@@ -119,9 +177,8 @@ export async function GET(request: Request) {
       rows = db.prepare(`SELECT ${selectCols} FROM channels`).all() as ChannelRow[];
     }
 
+    const channels = rows.map((row) => toChannel(row, db));
     db.close();
-
-    const channels = rows.map(toChannel);
 
     return NextResponse.json(channels);
   } catch (err) {

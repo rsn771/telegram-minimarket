@@ -1,28 +1,38 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ChevronLeft, Star, ShieldCheck, Zap, Plus } from "lucide-react";
+import { ChevronLeft, ChevronDown, ChevronUp, Star, ShieldCheck, Zap, Plus } from "lucide-react";
 import { hapticFeedback } from "@/utils/telegram";
 import { useApps } from "@/context/AppsContext";
 import { useMyApps } from "@/context/MyAppsContext";
 import { preloadPlusSound, playPlusSound } from "@/utils/sounds";
 
+type Review = {
+  id: number;
+  idminiapp: string;
+  username: string;
+  rating: number;
+  text: string;
+  createdAt: string;
+};
+
 export default function AppDetail() {
   const { id } = useParams();
   const router = useRouter();
-  const { getAppById, loading } = useApps();
+  const { getAppById, loading, refetch } = useApps();
   const { toggleApp, isInMyApps } = useMyApps();
   const [fullscreenScreenshotIndex, setFullscreenScreenshotIndex] = useState<number | null>(null);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [selectedRating, setSelectedRating] = useState(0);
   const [reviewText, setReviewText] = useState("");
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [loadingReviews, setLoadingReviews] = useState(false);
+  const [submittingReview, setSubmittingReview] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [showAllReviews, setShowAllReviews] = useState(false);
   const app = typeof id === "string" ? getAppById(id) : undefined;
 
-  if (loading) return <div className="p-10 text-center font-sans text-black dark:text-white bg-transparent">Загрузка…</div>;
-  if (!app) return <div className="p-10 text-center font-sans text-black dark:text-white bg-transparent">Приложение не найдено</div>;
-
-  const inMyApps = isInMyApps(String(app.id));
-
+  // ВСЕ хуки должны быть вызваны ДО любых условных возвратов (правила React Hooks)
   // Используем встроенную кнопку Telegram BackButton вместо собственной панели
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -57,6 +67,40 @@ export default function AppDetail() {
   useEffect(() => {
     preloadPlusSound();
   }, []);
+
+  // Отмечаем, что компонент смонтирован на клиенте
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Загрузка отзывов только на клиенте после монтирования
+  useEffect(() => {
+    if (!mounted || !app?.id) return;
+    setLoadingReviews(true);
+    fetch(`/api/reviews?idminiapp=${encodeURIComponent(app.id)}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setReviews(data);
+        } else {
+          setReviews([]);
+        }
+      })
+      .catch((err) => {
+        console.error("Ошибка загрузки отзывов:", err);
+        setReviews([]);
+      })
+      .finally(() => {
+        setLoadingReviews(false);
+      });
+  }, [mounted, app?.id]);
+
+  // Условные возвраты ПОСЛЕ всех хуков
+  if (loading) return <div className="p-10 text-center font-sans text-black dark:text-white bg-transparent">Загрузка…</div>;
+  if (!app) return <div className="p-10 text-center font-sans text-black dark:text-white bg-transparent">Приложение не найдено</div>;
+
+  // Вычисляем inMyApps только после монтирования, чтобы избежать проблем с гидратацией
+  const inMyApps = mounted ? isInMyApps(String(app.id)) : false;
 
   const handleOpen = () => {
     hapticFeedback("medium");
@@ -100,10 +144,44 @@ export default function AppDetail() {
     setReviewText("");
   };
 
-  const handleSubmitReview = () => {
+  const handleSubmitReview = async () => {
+    if (!app?.id || selectedRating === 0 || !reviewText.trim()) return;
+    
     hapticFeedback("medium");
-    // Здесь можно добавить отправку отзыва на сервер
-    closeReviewModal();
+    setSubmittingReview(true);
+
+    try {
+      const response = await fetch("/api/reviews", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          idminiapp: app.id,
+          rating: selectedRating,
+          text: reviewText.trim(),
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Ошибка при отправке отзыва");
+      }
+
+      const newReview = await response.json();
+      setReviews((prev) => [newReview, ...prev]);
+      
+      // Обновляем данные приложения, чтобы получить новый рейтинг из БД
+      // API автоматически обновляет рейтинг в БД при добавлении отзыва
+      await refetch();
+      
+      closeReviewModal();
+    } catch (err) {
+      console.error("Ошибка отправки отзыва:", err);
+      alert(err instanceof Error ? err.message : "Не удалось отправить отзыв");
+    } finally {
+      setSubmittingReview(false);
+    }
   };
 
   return (
@@ -149,7 +227,7 @@ export default function AppDetail() {
           <div className="text-center flex-1">
             <p className="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase mb-1">Рейтинг</p>
             <p className="text-[20px] font-black text-gray-700 dark:text-gray-200 flex items-center gap-1 justify-center">
-              {Number(app.rating) || 0} <Star size={16} className="fill-gray-700 dark:fill-gray-300 stroke-none" />
+              {Number(app.rating).toFixed(1)} <Star size={16} className="fill-gray-700 dark:fill-gray-300 stroke-none" />
             </p>
           </div>
           <div className="w-[1px] bg-gray-200 dark:bg-gray-600 h-8 self-center"></div>
@@ -217,23 +295,84 @@ export default function AppDetail() {
             Оценить
           </button>
           <p className="text-[32px] font-black text-gray-800 dark:text-gray-200 flex items-center gap-1.5">
-            {Number(app.rating) || 0} <Star size={28} className="fill-amber-400 text-amber-400 stroke-none" />
+            {Number(app.rating).toFixed(1)} <Star size={28} className="fill-amber-400 text-amber-400 stroke-none" />
           </p>
         </div>
-        <div className="pt-4 border-t border-gray-200/80 dark:border-gray-600/80">
-          <div className="flex flex-wrap items-baseline gap-2 mb-1">
-            <p className="font-semibold text-[17px] text-black dark:text-white">Пользователь</p>
-            <p className="text-[13px] text-gray-500 dark:text-gray-400">7 февраля 2026</p>
+        {!mounted ? (
+          <div className="pt-4 border-t border-gray-200/80 dark:border-gray-600/80">
+            <p className="text-gray-500 dark:text-gray-400 text-[15px]">Загрузка отзывов...</p>
           </div>
-          <div className="flex items-center gap-1 mb-2">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <Star key={i} size={14} className="fill-amber-400 text-amber-400 stroke-none" />
-            ))}
+        ) : (
+          <div className="pt-4 border-t border-gray-200/80 dark:border-gray-600/80">
+            {loadingReviews ? (
+              <p className="text-gray-500 dark:text-gray-400 text-[15px]">Загрузка отзывов...</p>
+            ) : reviews.length === 0 ? (
+              <p className="text-gray-500 dark:text-gray-400 text-[15px]">Пока нет отзывов. Будьте первым!</p>
+            ) : (
+              <>
+                <div className="space-y-5">
+                  {(showAllReviews ? reviews : reviews.slice(0, 3)).map((review) => {
+                    // Форматируем дату только на клиенте
+                    let formattedDate = "";
+                    try {
+                      const reviewDate = new Date(review.createdAt);
+                      formattedDate = reviewDate.toLocaleDateString("ru-RU", {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                      });
+                    } catch {
+                      formattedDate = review.createdAt;
+                    }
+
+                    return (
+                      <div key={review.id} className="pb-4 last:pb-0 border-b border-gray-200/80 dark:border-gray-600/80 last:border-b-0">
+                        <div className="flex flex-wrap items-baseline gap-2 mb-1">
+                          <p className="font-semibold text-[17px] text-black dark:text-white">{review.username}</p>
+                          <p className="text-[13px] text-gray-500 dark:text-gray-400">{formattedDate}</p>
+                        </div>
+                        <div className="flex items-center gap-1 mb-2">
+                          {[1, 2, 3, 4, 5].map((i) => (
+                            <Star
+                              key={i}
+                              size={14}
+                              className={i <= review.rating ? "fill-amber-400 text-amber-400 stroke-none" : "fill-gray-300 dark:fill-gray-600 text-gray-300 dark:text-gray-600 stroke-none"}
+                            />
+                          ))}
+                        </div>
+                        <p className="text-gray-600 dark:text-gray-300 text-[15px] leading-relaxed whitespace-pre-line">
+                          {review.text}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+                {reviews.length > 3 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      hapticFeedback("light");
+                      setShowAllReviews(!showAllReviews);
+                    }}
+                    className="mt-5 w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-white/40 dark:bg-gray-700/40 text-[#007AFF] font-semibold text-[15px] active:opacity-70 transition-colors border border-white/40 dark:border-gray-600/40"
+                  >
+                    {showAllReviews ? (
+                      <>
+                        <ChevronUp size={20} strokeWidth={2.5} />
+                        <span>Скрыть</span>
+                      </>
+                    ) : (
+                      <>
+                        <ChevronDown size={20} strokeWidth={2.5} />
+                        <span>Показать все</span>
+                      </>
+                    )}
+                  </button>
+                )}
+              </>
+            )}
           </div>
-          <p className="text-gray-600 dark:text-gray-300 text-[15px] leading-relaxed">
-            Отличное мини-приложение, всё быстро и понятно. Рекомендую!
-          </p>
-        </div>
+        )}
       </div>
 
       {showReviewModal && (
@@ -303,10 +442,10 @@ export default function AppDetail() {
               <button
                 type="button"
                 onClick={handleSubmitReview}
-                disabled={selectedRating === 0}
+                disabled={selectedRating === 0 || submittingReview}
                 className="flex-1 py-3 rounded-xl font-semibold text-[15px] bg-[#007AFF] text-white active:opacity-70 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Отправить
+                {submittingReview ? "Отправка..." : "Отправить"}
               </button>
             </div>
           </div>

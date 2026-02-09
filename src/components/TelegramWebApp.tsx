@@ -152,14 +152,15 @@ export function TelegramWebApp() {
       }
 
       // Запрашиваем полноэкранный режим, если доступен (Bot API 8.0+)
-      try {
-        const tgFs = tg as unknown as { requestFullscreen?: () => void };
-        if (typeof tgFs.requestFullscreen === "function") {
-          tgFs.requestFullscreen();
-        }
-      } catch {
-        // Игнорируем, если метод недоступен или отклонён
-      }
+      // Примечание: requestFullscreen не поддерживается в версии 6.0, поэтому убираем вызов
+      // try {
+      //   const tgFs = tg as unknown as { requestFullscreen?: () => void };
+      //   if (typeof tgFs.requestFullscreen === "function") {
+      //     tgFs.requestFullscreen();
+      //   }
+      // } catch {
+      //   // Игнорируем, если метод недоступен или отклонён
+      // }
 
       // Звук при открытии мини-приложения
       try {

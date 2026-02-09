@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Star, Plus } from "lucide-react";
 import Link from "next/link";
 import { hapticFeedback } from "@/utils/telegram";
@@ -23,9 +23,13 @@ function openAppUrl(url: string) {
 export const AppCard = ({ app, openDirectly = false }: { app: AppItem; openDirectly?: boolean }) => {
   const { toggleApp, isInMyApps } = useMyApps();
   const appId = String(app.id);
-  const inMyApps = isInMyApps(appId);
+  const [mounted, setMounted] = useState(false);
+  
+  // Вычисляем inMyApps только после монтирования, чтобы избежать проблем с гидратацией
+  const inMyApps = mounted ? isInMyApps(appId) : false;
 
   useEffect(() => {
+    setMounted(true);
     preloadPlusSound();
   }, []);
 
@@ -59,7 +63,7 @@ export const AppCard = ({ app, openDirectly = false }: { app: AppItem; openDirec
           <p className="text-gray-500 dark:text-gray-400 text-[14px]">{app.category}</p>
           <div className="flex items-center gap-1 mt-1">
             <Star size={10} className="fill-gray-400 stroke-none" />
-            <span className="text-[12px] text-gray-400 font-bold">{app.rating}</span>
+            <span className="text-[12px] text-gray-400 font-bold">{Number(app.rating).toFixed(1)}</span>
           </div>
         </div>
       </Link>

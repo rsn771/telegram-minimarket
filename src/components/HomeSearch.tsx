@@ -140,7 +140,7 @@ export function HomeSearch() {
         </div>
 
         <div className="flex flex-col">
-          {(query.trim() ? matches : apps).map((app) => (
+          {(query.trim() ? matches : apps.slice(0, 5)).map((app) => (
             <AppCard key={app.id} app={app} />
           ))}
         </div>
@@ -151,6 +151,13 @@ export function HomeSearch() {
             className="max-w-full w-full h-auto object-contain object-left block"
           />
         </div>
+        {!query.trim() && apps.length > 5 && (
+          <div className="flex flex-col mt-4">
+            {apps.slice(5).map((app) => (
+              <AppCard key={app.id} app={app} />
+            ))}
+          </div>
+        )}
       </section>
 
       <BottomNav active="main" />
