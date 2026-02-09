@@ -4,13 +4,17 @@ import path from "path";
 import fs from "fs";
 
 const DB_DIR = path.join(process.cwd(), "database");
-const REVIEWS_DB_PATH = path.join(DB_DIR, "reviews.db");
+const IS_VERCEL = !!process.env.VERCEL;
+// Локально работаем с файлом в репозитории, на Vercel пишем во временную директорию (/tmp),
+// т.к. файловая система билда только для чтения.
+const RUNTIME_REVIEWS_DIR = IS_VERCEL ? process.env.TMPDIR || "/tmp" : DB_DIR;
+const REVIEWS_DB_PATH = path.join(RUNTIME_REVIEWS_DIR, "reviews.db");
 const CHANNELS_DB_PATH = path.join(DB_DIR, "telegram_channels.db");
 
 function ensureReviewsDbExists(): void {
   try {
-    if (!fs.existsSync(DB_DIR)) {
-      fs.mkdirSync(DB_DIR, { recursive: true });
+    if (!fs.existsSync(RUNTIME_REVIEWS_DIR)) {
+      fs.mkdirSync(RUNTIME_REVIEWS_DIR, { recursive: true });
     }
     const db = new Database(REVIEWS_DB_PATH);
     db.exec(`
@@ -33,50 +37,14 @@ function ensureReviewsDbExists(): void {
 // Функция удалена, теперь используем ensureReviewsDbExists()
 
 /**
- * Вычисляет средний рейтинг из отзывов для приложения и обновляет его в таблице channels
- * Округляет до десятых (1 знак после запятой)
- * Использует отдельные БД для отзывов и каналов
+ * Раньше эта функция пересчитывала рейтинг и писала его в telegram_channels.db.
+ * На Vercel файлы БД только для чтения, поэтому любые UPDATE вызывают SQLITE_READONLY.
+ *
+ * Сейчас пересчёт рейтинга выполняется «на лету» в /api/channels,
+ * поэтому здесь ничего писать в БД НЕ НУЖНО.
  */
-function updateAppRating(idminiapp: string): void {
-  try {
-    // Читаем отзывы из БД отзывов
-    if (!fs.existsSync(REVIEWS_DB_PATH)) {
-      return;
-    }
-    
-    const reviewsDb = new Database(REVIEWS_DB_PATH, { readonly: true });
-    const reviews = reviewsDb.prepare(`
-      SELECT rating FROM reviews WHERE idminiapp = ?
-    `).all(idminiapp) as { rating: number }[];
-    reviewsDb.close();
-
-    if (reviews.length === 0) {
-      // Если нет отзывов, устанавливаем рейтинг в 0
-      if (fs.existsSync(CHANNELS_DB_PATH)) {
-        const channelsDb = new Database(CHANNELS_DB_PATH, { readonly: false });
-        channelsDb.prepare("UPDATE channels SET rating = 0 WHERE idminiapp = ?").run(idminiapp);
-        channelsDb.close();
-      }
-      return;
-    }
-
-    // Вычисляем среднее значение
-    const sum = reviews.reduce((acc, review) => acc + review.rating, 0);
-    const average = sum / reviews.length;
-    
-    // Округляем до десятых (1 знак после запятой)
-    const roundedRating = Math.round(average * 10) / 10;
-
-    // Обновляем рейтинг в БД каналов
-    if (fs.existsSync(CHANNELS_DB_PATH)) {
-      const channelsDb = new Database(CHANNELS_DB_PATH, { readonly: false });
-      channelsDb.prepare("UPDATE channels SET rating = ? WHERE idminiapp = ?").run(roundedRating, idminiapp);
-      channelsDb.close();
-    }
-  } catch (error) {
-    console.error("Error updating app rating:", error);
-    // Не бросаем ошибку, чтобы не блокировать добавление отзыва
-  }
+function updateAppRating(_idminiapp: string): void {
+  // no-op: рейтинг считается при выборке каналов из отдельной БД отзывов
 }
 
 type ReviewRow = {
