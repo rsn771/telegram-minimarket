@@ -188,8 +188,14 @@ export async function GET(request: Request) {
       );
     }
 
-    ensureColumns(db);
-    ensureReviewsTable(db); // Убеждаемся, что таблица reviews существует
+    // Пытаемся обновить структуру БД только если не в readonly режиме
+    try {
+      ensureColumns(db);
+      ensureReviewsTable(db); // Убеждаемся, что таблица reviews существует
+    } catch (schemaError) {
+      // Игнорируем ошибки схемы в readonly режиме - таблицы должны уже существовать
+      console.warn("Could not update schema (readonly mode?):", schemaError);
+    }
 
     const selectCols =
       "idminiapp, title, description, icon, url, is_verified, rating, category, screenshots_path";
