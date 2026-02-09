@@ -3,12 +3,23 @@ import Database from "better-sqlite3";
 import path from "path";
 import fs from "fs";
 
+// Условный импорт KV (только если доступен)
+let kv: any = null;
+try {
+  const kvModule = require("@vercel/kv");
+  kv = kvModule.kv;
+} catch {
+  // Пакет не установлен локально, будет использоваться SQLite
+}
+
 const DB_DIR = path.join(process.cwd(), "database");
 const IS_VERCEL = !!process.env.VERCEL;
-// На проде пишем/читаем отзывы из TMPDIR (/tmp), локально – из database/
+const USE_KV = IS_VERCEL && !!process.env.KV_REST_API_URL && !!process.env.KV_REST_API_TOKEN;
+// На проде используем KV для постоянного хранения отзывов, локально – SQLite из database/
 const RUNTIME_REVIEWS_DIR = IS_VERCEL ? process.env.TMPDIR || "/tmp" : DB_DIR;
 const DB_PATH = path.join(DB_DIR, "telegram_channels.db");
 const REVIEWS_DB_PATH = path.join(RUNTIME_REVIEWS_DIR, "reviews.db");
+const KV_REVIEWS_KEY = "reviews:all";
 
 // Проверяем, что better-sqlite3 доступен
 let sqliteAvailable = true;
@@ -112,23 +123,41 @@ function ensureReviewsDbExists(): void {
 /**
  * Вычисляет средний рейтинг из отзывов для приложения
  * Округляет до десятых (1 знак после запятой)
- * Использует отдельную БД для отзывов
+ * Использует KV на проде или SQLite локально
  */
-function calculateRatingFromReviews(idminiapp: string): number {
+async function calculateRatingFromReviews(idminiapp: string): Promise<number> {
   try {
-    if (!fs.existsSync(REVIEWS_DB_PATH)) {
-      return 0;
-    }
+    let reviews: { rating: number }[] = [];
 
-    const reviewsDb = new Database(REVIEWS_DB_PATH, { readonly: true });
-    const reviews = reviewsDb
-      .prepare(
-        `
-      SELECT rating FROM reviews WHERE idminiapp = ?
-    `,
-      )
-      .all(idminiapp) as { rating: number }[];
-    reviewsDb.close();
+    if (USE_KV && kv) {
+      // Читаем из KV
+      try {
+        const allReviews = await (kv as any).get<Array<{ idminiapp: string; rating: number }>>(KV_REVIEWS_KEY);
+        if (allReviews) {
+          reviews = allReviews
+            .filter((r) => r.idminiapp === idminiapp)
+            .map((r) => ({ rating: r.rating }));
+        }
+      } catch (kvError) {
+        console.error("Error reading reviews from KV:", kvError);
+        return 0;
+      }
+    } else {
+      // Читаем из SQLite
+      if (!fs.existsSync(REVIEWS_DB_PATH)) {
+        return 0;
+      }
+
+      const reviewsDb = new Database(REVIEWS_DB_PATH, { readonly: true });
+      reviews = reviewsDb
+        .prepare(
+          `
+        SELECT rating FROM reviews WHERE idminiapp = ?
+      `,
+        )
+        .all(idminiapp) as { rating: number }[];
+      reviewsDb.close();
+    }
 
     if (reviews.length === 0) {
       return 0;
@@ -144,9 +173,19 @@ function calculateRatingFromReviews(idminiapp: string): number {
   }
 }
 
-function toChannel(row: ChannelRow) {
-  // Вычисляем рейтинг из отдельной БД отзывов
-  const calculatedRating = calculateRatingFromReviews(row.idminiapp);
+async function toChannel(row: ChannelRow): Promise<{
+  id: string;
+  name: string;
+  category: string;
+  icon: string;
+  url: string;
+  description: string;
+  rating: number;
+  isVerified: boolean;
+  screenshots: string[];
+}> {
+  // Вычисляем рейтинг из отдельной БД отзывов (KV на проде, SQLite локально)
+  const calculatedRating = await calculateRatingFromReviews(row.idminiapp);
   // Используем вычисленный рейтинг из отзывов, если он есть, иначе значение из БД
   const rating = calculatedRating > 0 ? calculatedRating : (row.rating ?? 0);
 
@@ -273,7 +312,7 @@ export async function GET(request: Request) {
         return NextResponse.json({ error: "Канал не найден" }, { status: 404 });
       }
 
-      const channel = toChannel(row);
+      const channel = await toChannel(row);
       if (db) {
         db.close();
       }
@@ -294,7 +333,7 @@ export async function GET(request: Request) {
 
     console.log(`Found ${rows.length} channels`);
 
-    const channels = rows.map((row) => toChannel(row));
+    const channels = await Promise.all(rows.map((row) => toChannel(row)));
     if (db) {
       db.close();
     }
