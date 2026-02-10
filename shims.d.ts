@@ -3,7 +3,12 @@ declare module "better-sqlite3" {
   export default Database;
 }
 
-declare module "@vercel/kv" {
-  export const kv: any;
+declare module "@neondatabase/serverless" {
+  export function neon(
+    connectionString: string
+  ): <T = any>(
+    strings: TemplateStringsArray,
+    ...values: any[]
+  ) => Promise<T[]>;
 }
 

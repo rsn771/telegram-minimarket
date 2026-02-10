@@ -2,27 +2,23 @@ import { NextResponse } from "next/server";
 import Database from "better-sqlite3";
 import path from "path";
 import fs from "fs";
+import { neon } from "@neondatabase/serverless";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const DB_DIR = path.join(process.cwd(), "database");
 const IS_VERCEL = !!process.env.VERCEL;
-const USE_KV = IS_VERCEL && !!process.env.KV_REST_API_URL && !!process.env.KV_REST_API_TOKEN;
-// На проде используем KV для постоянного хранения отзывов, локально – SQLite из database/
+const DATABASE_URL = process.env.DATABASE_URL;
+// На Vercel рейтинги считаем по отзывам из Postgres, локально — из SQLite reviews.db
+const USE_POSTGRES = !!DATABASE_URL && IS_VERCEL;
 const RUNTIME_REVIEWS_DIR = IS_VERCEL ? process.env.TMPDIR || "/tmp" : DB_DIR;
 const DB_PATH = path.join(DB_DIR, "telegram_channels.db");
 const REVIEWS_DB_PATH = path.join(RUNTIME_REVIEWS_DIR, "reviews.db");
-const KV_REVIEWS_KEY = "reviews:all";
 
-async function getKvClient(): Promise<null | { get: (key: string) => Promise<any> }> {
-  if (!USE_KV) return null;
-  try {
-    const mod = await import("@vercel/kv");
-    return mod.kv as any;
-  } catch {
-    return null;
-  }
+function getPostgresClient() {
+  if (!USE_POSTGRES || !DATABASE_URL) return null;
+  return neon(DATABASE_URL);
 }
 
 // Проверяем, что better-sqlite3 доступен
@@ -127,42 +123,49 @@ function ensureReviewsDbExists(): void {
 /**
  * Вычисляет средний рейтинг из отзывов для приложения
  * Округляет до десятых (1 знак после запятой)
- * Использует KV на проде или SQLite локально
+ * Использует Postgres (Neon) на проде или SQLite локально
  */
 async function calculateRatingFromReviews(idminiapp: string): Promise<number> {
   try {
     let reviews: { rating: number }[] = [];
 
-    const kv = await getKvClient();
-    if (kv) {
-      // Читаем из KV
-      try {
-        const allReviews = (await kv.get(KV_REVIEWS_KEY)) as Array<{ idminiapp: string; rating: number }> | null;
-        if (allReviews) {
-          reviews = allReviews
-            .filter((r) => r.idminiapp === idminiapp)
-            .map((r) => ({ rating: r.rating }));
-        }
-      } catch (kvError) {
-        console.error("Error reading reviews from KV:", kvError);
-        return 0;
-      }
-    } else {
-      // Читаем из SQLite
-      if (!fs.existsSync(REVIEWS_DB_PATH)) {
-        return 0;
-      }
+    const sql = getPostgresClient();
 
-      const reviewsDb = new Database(REVIEWS_DB_PATH, { readonly: true });
-      reviews = reviewsDb
-        .prepare(
-          `
+    if (sql) {
+      // Читаем средний рейтинг из Postgres
+      try {
+        const rows = (await sql`
+          SELECT AVG(rating)::float AS avg_rating
+          FROM reviews
+          WHERE idminiapp = ${idminiapp}
+        `) as any[];
+
+        const avg = rows[0]?.avg_rating;
+        if (avg == null) {
+          return 0;
+        }
+
+        return Math.round(Number(avg) * 10) / 10;
+      } catch (pgError) {
+        console.error("Error reading rating from Postgres:", pgError);
+        // падать не даём, просто вернём 0 или значение из SQLite
+      }
+    }
+
+    // Фоллбек: читаем оценки из локальной SQLite (dev)
+    if (!fs.existsSync(REVIEWS_DB_PATH)) {
+      return 0;
+    }
+
+    const reviewsDb = new Database(REVIEWS_DB_PATH, { readonly: true });
+    reviews = reviewsDb
+      .prepare(
+        `
         SELECT rating FROM reviews WHERE idminiapp = ?
       `,
-        )
-        .all(idminiapp) as { rating: number }[];
-      reviewsDb.close();
-    }
+      )
+      .all(idminiapp) as { rating: number }[];
+    reviewsDb.close();
 
     if (reviews.length === 0) {
       return 0;
