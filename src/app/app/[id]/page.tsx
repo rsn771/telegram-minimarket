@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ChevronLeft, ChevronDown, ChevronUp, Star, ShieldCheck, Zap, Plus } from "lucide-react";
+import { ChevronLeft, ChevronDown, ChevronUp, Star, ShieldCheck, Plus } from "lucide-react";
 import { hapticFeedback } from "@/utils/telegram";
 import { useApps } from "@/context/AppsContext";
 import { useMyApps } from "@/context/MyAppsContext";
@@ -255,6 +255,7 @@ export default function AppDetail() {
         </div>
       </div>
 
+      {/* Блок скриншотов показываем только если в БД есть скриншоты (для ботов и записей без скринов не показываем) */}
       {app.screenshots && app.screenshots.length > 0 && (
         <div className="mt-3 mx-3 rounded-2xl bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border border-white/40 dark:border-gray-600/40 py-6 overflow-hidden">
           <h2 className="px-5 text-[20px] font-bold mb-4 tracking-tight text-black dark:text-white">Предпросмотр</h2>
@@ -268,25 +269,6 @@ export default function AppDetail() {
               >
                 <img src={src} alt={`Скриншот ${i + 1}`} className="max-h-[420px] w-auto object-contain block" />
               </button>
-            ))}
-          </div>
-        </div>
-      )}
-      {(!app.screenshots || app.screenshots.length === 0) && (
-        <div className="mt-3 mx-3 rounded-2xl bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border border-white/40 dark:border-gray-600/40 py-6 overflow-hidden">
-          <h2 className="px-5 text-[20px] font-bold mb-4 tracking-tight text-black dark:text-white">Предпросмотр</h2>
-          <div className="flex gap-4 overflow-x-auto px-5 no-scrollbar">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="min-w-[260px] h-[460px] bg-gradient-to-br from-blue-500 to-purple-600 rounded-[2.5rem] flex-shrink-0 shadow-xl overflow-hidden relative border-[6px] border-black/20 dark:border-gray-600">
-                <div className="absolute top-0 w-full h-6 bg-black flex justify-center">
-                  <div className="w-20 h-4 bg-black rounded-b-xl"></div>
-                </div>
-                <div className="flex flex-col items-center justify-center h-full text-white p-8 text-center">
-                  <Zap size={48} className="mb-4 opacity-50" />
-                  <div className="text-xl font-bold italic">AMAZING INTERFACE</div>
-                  <div className="text-sm opacity-70 mt-2 text-balance">Built for Telegram Mini Apps 2026</div>
-                </div>
-              </div>
             ))}
           </div>
         </div>
