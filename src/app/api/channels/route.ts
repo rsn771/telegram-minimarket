@@ -86,7 +86,7 @@ function ensureDbExists(): void {
   }
 }
 
-function ensureColumns(db: Database.Database) {
+function ensureColumns(db: any) {
   const info = db.prepare("PRAGMA table_info(channels)").all() as { name: string }[];
   const names = new Set(info.map((c) => c.name));
   if (!names.has("category")) {
@@ -211,7 +211,7 @@ async function toChannel(row: ChannelRow): Promise<{
 }
 
 export async function GET(request: Request) {
-  let db: Database.Database | undefined = undefined;
+  let db: any | undefined = undefined;
   try {
     // Проверяем доступность SQLite
     if (!sqliteAvailable) {
