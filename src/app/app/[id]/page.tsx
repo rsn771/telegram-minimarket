@@ -5,7 +5,6 @@ import { ChevronLeft, ChevronDown, ChevronUp, Star, ShieldCheck, Zap, Plus } fro
 import { hapticFeedback } from "@/utils/telegram";
 import { useApps } from "@/context/AppsContext";
 import { useMyApps } from "@/context/MyAppsContext";
-import { preloadPlusSound, playPlusSound } from "@/utils/sounds";
 
 type Review = {
   id: number;
@@ -36,12 +35,34 @@ export default function AppDetail() {
   // Используем встроенную кнопку Telegram BackButton вместо собственной панели
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const tg = (window as unknown as { Telegram?: { WebApp?: { BackButton?: { show: () => void; hide: () => void; onClick: (cb: () => void) => void; offClick: (cb: () => void) => void } } } }).Telegram?.WebApp;
+    const tg = (window as unknown as {
+      Telegram?: {
+        WebApp?: {
+          BackButton?: {
+            show: () => void;
+            hide: () => void;
+            onClick: (cb: () => void) => void;
+            offClick: (cb: () => void) => void;
+          };
+          close?: () => void;
+        };
+      };
+    }).Telegram?.WebApp;
     if (!tg?.BackButton) return;
 
     const handleBackClick = () => {
       hapticFeedback("light");
-      router.back();
+      // Если есть история навигации внутри мини‑приложения — возвращаемся назад,
+      // иначе просто закрываем мини‑приложение.
+      if (window.history.length > 1) {
+        router.back();
+      } else {
+        try {
+          tg.close?.();
+        } catch {
+          // если close недоступен – ничего страшного
+        }
+      }
     };
 
     try {
@@ -62,11 +83,6 @@ export default function AppDetail() {
       }
     };
   }, [router]);
-
-  // Предзагрузка звука для плюса, чтобы не было задержки при первом нажатии
-  useEffect(() => {
-    preloadPlusSound();
-  }, []);
 
   // Отмечаем, что компонент смонтирован на клиенте
   useEffect(() => {
@@ -118,7 +134,6 @@ export default function AppDetail() {
 
   const handlePlus = () => {
     hapticFeedback("light");
-    playPlusSound();
     toggleApp(String(app.id));
   };
 

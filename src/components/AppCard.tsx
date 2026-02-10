@@ -6,7 +6,6 @@ import Link from "next/link";
 import { hapticFeedback } from "@/utils/telegram";
 import { useMyApps } from "@/context/MyAppsContext";
 import type { AppItem } from "@/context/AppsContext";
-import { preloadPlusSound, playPlusSound } from "@/utils/sounds";
 
 function openAppUrl(url: string) {
   const w = typeof window !== "undefined" ? (window as unknown as { Telegram?: { WebApp?: { openTelegramLink?: (url: string) => void; openLink?: (url: string) => void } } }) : null;
@@ -30,7 +29,6 @@ export const AppCard = ({ app, openDirectly = false }: { app: AppItem; openDirec
 
   useEffect(() => {
     setMounted(true);
-    preloadPlusSound();
   }, []);
 
   const handleClick = () => {
@@ -41,7 +39,6 @@ export const AppCard = ({ app, openDirectly = false }: { app: AppItem; openDirec
     e.preventDefault();
     e.stopPropagation();
     hapticFeedback("light");
-    playPlusSound();
     toggleApp(appId);
   };
 
