@@ -49,8 +49,11 @@ export function HomeSearch() {
   const TOP_CHARTS_VISIBLE = 5;
   const TOP_CHARTS_MAX = 10;
 
-  const topChartsApps = apps.slice(0, TOP_CHARTS_MAX);
-  const moreApps = apps.slice(TOP_CHARTS_MAX);
+  // Формируем «топ чарты» как приложения с наибольшим рейтингом
+  const sortedByRating = [...apps].sort((a, b) => Number(b.rating) - Number(a.rating));
+  const topChartsApps = sortedByRating.slice(0, TOP_CHARTS_MAX);
+  // Остальные приложения идут в нижний раздел под второй картинкой
+  const moreApps = sortedByRating.slice(TOP_CHARTS_MAX);
 
   const visibleTopCharts = isSearching
     ? matches
@@ -73,13 +76,13 @@ export function HomeSearch() {
             <input
               ref={inputRef}
               type="search"
-              placeholder="Search apps"
+              placeholder="Поиск приложений"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onFocus={() => setFocused(true)}
               onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
               className="flex-1 bg-transparent text-[17px] text-black dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 outline-none min-w-0"
-              aria-label="Search"
+              aria-label="Поиск"
               aria-autocomplete="list"
               aria-expanded={displaySuggestions}
             />
@@ -125,7 +128,7 @@ export function HomeSearch() {
 
         {hasQuery && matches.length === 0 && (
           <p className="mt-2 px-2 text-[15px] text-gray-500 dark:text-gray-400">
-            No results for “{query.trim()}”
+            Ничего не найдено по запросу «{query.trim()}»
           </p>
         )}
       </div>
@@ -137,10 +140,10 @@ export function HomeSearch() {
         </div>
       )}
       {loading && apps.length === 0 && (
-        <div className="p-8 text-center text-gray-500 dark:text-gray-400">Loading…</div>
+        <div className="p-8 text-center text-gray-500 dark:text-gray-400">Загрузка…</div>
       )}
       <header className="p-5 pt-2">
-        <h1 className="text-[34px] font-bold tracking-tight text-black dark:text-white">Today</h1>
+        <h1 className="text-[34px] font-bold tracking-tight text-black dark:text-white">Сегодня</h1>
         <div className="w-full mt-3 overflow-hidden rounded-2xl bg-white/40 dark:bg-gray-800/40 backdrop-blur-md border border-white/30 dark:border-gray-600/30">
           <img
             src="/image123.png"
@@ -152,7 +155,7 @@ export function HomeSearch() {
 
       <section className="mt-2">
         <div className="px-5 mb-4 flex justify-between items-end">
-          <h2 className="text-[22px] font-bold text-black dark:text-white">Top charts</h2>
+          <h2 className="text-[22px] font-bold text-black dark:text-white">Топ чарты</h2>
           <span className="text-[#007AFF] text-[17px]"> </span>
         </div>
 
@@ -176,15 +179,7 @@ export function HomeSearch() {
               }}
               className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-white/40 dark:bg-gray-700/40 text-[#007AFF] font-semibold text-[15px] active:opacity-70 transition-colors border border-white/40 dark:border-gray-600/40"
             >
-              {showAllTopCharts ? (
-                <>
-                  <span>Hide</span>
-                </>
-              ) : (
-                <>
-                  <span>Show all</span>
-                </>
-              )}
+              {showAllTopCharts ? "Скрыть" : "Показать все"}
             </button>
           </div>
         )}
@@ -203,7 +198,7 @@ export function HomeSearch() {
                 <AppCard key={app.id} app={app} />
               ))}
             </div>
-            {moreApps.length > 5 && (
+            {moreApps.length > TOP_CHARTS_VISIBLE && (
               <div className="px-5 mt-3">
                 <button
                   type="button"
@@ -213,7 +208,7 @@ export function HomeSearch() {
                   }}
                   className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-white/40 dark:bg-gray-700/40 text-[#007AFF] font-semibold text-[15px] active:opacity-70 transition-colors border border-white/40 dark:border-gray-600/40"
                 >
-                  {showAllMore ? "Hide" : "Show all"}
+                  {showAllMore ? "Скрыть" : "Показать все"}
                 </button>
               </div>
             )}
@@ -222,7 +217,7 @@ export function HomeSearch() {
       </section>
 
       <p className="mt-10 mb-6 mx-auto px-4 max-w-[36rem] text-center text-[13px] leading-relaxed text-gray-600 dark:text-gray-400">
-        Our marketplace helps you discover the best services in Telegram. We carefully collect them in one place, but it&apos;s important to remember that every app is created by independent developers. We do not claim authorship of third-party projects and cannot guarantee their uninterrupted operation. We do not promote any ideas, products, or views—the service is for informational purposes only. Enjoy using it, but stay vigilant!
+        Наш маркет помогает вам находить лучшие сервисы в Telegram. Мы заботливо собираем их в одном месте, но важно помнить: каждое приложение создано независимыми разработчиками. Мы не присваиваем себе авторство сторонних проектов и не можем гарантировать их бесперебойную работу. Мы не занимаемся пропагандой каких-либо идей, товаров или взглядов — наш сервис носит исключительно информационный характер. Пользуйтесь с удовольствием, но будьте бдительны!
       </p>
 
       <BottomNav active="main" />

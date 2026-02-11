@@ -7,9 +7,9 @@ import { hapticFeedback } from "@/utils/telegram";
 type Tab = "main" | "sections" | "my-apps";
 
 const tabs: { id: Tab; href: string; label: string; Icon: typeof LayoutGrid }[] = [
-  { id: "main", href: "/", label: "Home", Icon: LayoutGrid },
-  { id: "sections", href: "/sections", label: "Sections", Icon: FolderOpen },
-  { id: "my-apps", href: "/my-apps", label: "My apps", Icon: Smartphone },
+  { id: "main", href: "/", label: "Главная", Icon: LayoutGrid },
+  { id: "sections", href: "/sections", label: "Разделы", Icon: FolderOpen },
+  { id: "my-apps", href: "/my-apps", label: "Мои приложения", Icon: Smartphone },
 ];
 
 export function BottomNav({ active }: { active: Tab }) {

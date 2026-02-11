@@ -112,8 +112,8 @@ export default function AppDetail() {
   }, [mounted, app?.id]);
 
   // Условные возвраты ПОСЛЕ всех хуков
-  if (loading) return <div className="p-10 text-center font-sans text-black dark:text-white bg-transparent">Loading…</div>;
-  if (!app) return <div className="p-10 text-center font-sans text-black dark:text-white bg-transparent">App not found</div>;
+  if (loading) return <div className="p-10 text-center font-sans text-black dark:text-white bg-transparent">Загрузка…</div>;
+  if (!app) return <div className="p-10 text-center font-sans text-black dark:text-white bg-transparent">Приложение не найдено</div>;
 
   // Вычисляем inMyApps только после монтирования, чтобы избежать проблем с гидратацией
   const inMyApps = mounted ? isInMyApps(String(app.id)) : false;
@@ -215,7 +215,7 @@ export default function AppDetail() {
               <button
                 type="button"
                 onClick={handlePlus}
-    aria-label={inMyApps ? "Remove from My apps" : "Add to My apps"}
+    aria-label={inMyApps ? "Убрать из моих приложений" : "Добавить в мои приложения"}
                 className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors active:scale-95 ${
                   inMyApps ? "bg-[#007AFF] text-white" : "bg-white/60 dark:bg-gray-700/60 text-gray-500 dark:text-gray-400 border border-white/40 dark:border-gray-600/40"
                 }`}
@@ -240,14 +240,14 @@ export default function AppDetail() {
 
         <div className="flex justify-around border-t border-gray-200/80 dark:border-gray-600/80 mt-8 py-4 mx-5">
           <div className="text-center flex-1">
-                <p className="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase mb-1">Rating</p>
+                <p className="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase mb-1">Рейтинг</p>
             <p className="text-[20px] font-black text-gray-700 dark:text-gray-200 flex items-center gap-1 justify-center">
               {Number(app.rating).toFixed(1)} <Star size={16} className="fill-gray-700 dark:fill-gray-300 stroke-none" />
             </p>
           </div>
           <div className="w-[1px] bg-gray-200 dark:bg-gray-600 h-8 self-center"></div>
           <div className="text-center flex-1 px-2">
-            <p className="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase mb-1">Safety</p>
+            <p className="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase mb-1">Безопасность</p>
             <p className="text-[20px] font-black text-gray-700 dark:text-gray-200 flex justify-center">
               {app.isVerified ? <ShieldCheck className="text-green-500" /> : <ShieldCheck className="text-gray-400 dark:text-gray-500" />}
             </p>
@@ -275,21 +275,21 @@ export default function AppDetail() {
       )}
 
       <div className="mx-3 mt-3 px-5 py-6 rounded-2xl bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border border-white/40 dark:border-gray-600/40">
-        <h2 className="text-[20px] font-bold mb-3 tracking-tight text-black dark:text-white">Description</h2>
+        <h2 className="text-[20px] font-bold mb-3 tracking-tight text-black dark:text-white">Описание</h2>
         <p className="text-gray-600 dark:text-gray-300 leading-[1.5] text-[16px] font-normal whitespace-pre-line">
-          {app.description || "No description yet."}
+          {app.description || "Описание пока не добавлено."}
         </p>
       </div>
 
       <div className="mx-3 mt-3 px-5 py-6 rounded-2xl bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border border-white/40 dark:border-gray-600/40">
-        <h2 className="text-[20px] font-bold mb-4 tracking-tight text-black dark:text-white">Reviews</h2>
+        <h2 className="text-[20px] font-bold mb-4 tracking-tight text-black dark:text-white">Отзывы</h2>
         <div className="flex flex-wrap items-end gap-4 mb-5">
           <button
             type="button"
             onClick={openReviewModal}
             className="text-[15px] font-medium text-[#007AFF] pb-1 active:opacity-70"
           >
-            Rate
+            Оценить
           </button>
           <p className="text-[32px] font-black text-gray-800 dark:text-gray-200 flex items-center gap-1.5">
             {Number(app.rating).toFixed(1)} <Star size={28} className="fill-amber-400 text-amber-400 stroke-none" />
@@ -302,9 +302,9 @@ export default function AppDetail() {
         ) : (
           <div className="pt-4 border-t border-gray-200/80 dark:border-gray-600/80">
             {loadingReviews ? (
-              <p className="text-gray-500 dark:text-gray-400 text-[15px]">Loading reviews...</p>
+              <p className="text-gray-500 dark:text-gray-400 text-[15px]">Загрузка отзывов...</p>
             ) : reviews.length === 0 ? (
-              <p className="text-gray-500 dark:text-gray-400 text-[15px]">No reviews yet. Be the first!</p>
+              <p className="text-gray-500 dark:text-gray-400 text-[15px]">Пока нет отзывов. Будьте первым!</p>
             ) : (
               <>
                 <div className="space-y-5">
@@ -356,12 +356,12 @@ export default function AppDetail() {
                     {showAllReviews ? (
                       <>
                         <ChevronUp size={20} strokeWidth={2.5} />
-                        <span>Hide</span>
+                        <span>Скрыть</span>
                       </>
                     ) : (
                       <>
                         <ChevronDown size={20} strokeWidth={2.5} />
-                        <span>Show all</span>
+                        <span>Показать все</span>
                       </>
                     )}
                   </button>
@@ -377,7 +377,7 @@ export default function AppDetail() {
           className="fixed inset-0 z-[100] bg-black/50 flex items-center justify-center p-4"
           role="dialog"
           aria-modal="true"
-          aria-label="Leave a review"
+          aria-label="Оставить отзыв"
           onClick={closeReviewModal}
         >
           <div
@@ -385,11 +385,11 @@ export default function AppDetail() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="px-6 py-5 border-b border-gray-200 dark:border-gray-700">
-              <h3 className="text-[20px] font-bold text-black dark:text-white">Leave a review</h3>
+              <h3 className="text-[20px] font-bold text-black dark:text-white">Оставить отзыв</h3>
             </div>
             <div className="px-6 py-5 space-y-5">
               <div>
-                <p className="text-[15px] font-medium text-gray-700 dark:text-gray-300 mb-3">Rating</p>
+                <p className="text-[15px] font-medium text-gray-700 dark:text-gray-300 mb-3">Оценка</p>
                 <div className="flex items-center gap-2">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <button
@@ -400,7 +400,7 @@ export default function AppDetail() {
                         setSelectedRating(star);
                       }}
                       className="focus:outline-none"
-                      aria-label={`Rate ${star} stars`}
+                      aria-label={`Оценить ${star} звезд`}
                     >
                       <Star
                         size={32}
@@ -416,13 +416,13 @@ export default function AppDetail() {
               </div>
               <div>
                 <label htmlFor="review-text" className="block text-[15px] font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Your review
+                  Ваш отзыв
                 </label>
                 <textarea
                   id="review-text"
                   value={reviewText}
                   onChange={(e) => setReviewText(e.target.value)}
-                  placeholder="Write your review..."
+                  placeholder="Напишите ваш отзыв..."
                   className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-[15px] text-black dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#007AFF] resize-none"
                   rows={4}
                 />
@@ -434,7 +434,7 @@ export default function AppDetail() {
                 onClick={closeReviewModal}
                 className="flex-1 py-3 rounded-xl font-semibold text-[15px] bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 active:opacity-70"
               >
-                Cancel
+                Отменить
               </button>
               <button
                 type="button"
@@ -442,7 +442,7 @@ export default function AppDetail() {
                 disabled={selectedRating === 0 || submittingReview}
                 className="flex-1 py-3 rounded-xl font-semibold text-[15px] bg-[#007AFF] text-white active:opacity-70 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {submittingReview ? "Sending..." : "Submit"}
+                {submittingReview ? "Отправка..." : "Отправить"}
               </button>
             </div>
           </div>
