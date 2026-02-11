@@ -1,6 +1,6 @@
-import { Wallet, Gamepad2, Bot, Gift, Wrench, TrendingUp } from "lucide-react";
+import { Wallet, Gamepad2, Bot, Gift, Wrench, TrendingUp, Brain } from "lucide-react";
 
-export type SectionSlug = "finance" | "games" | "bots" | "gifts" | "utilities" | "trends";
+export type SectionSlug = "finance" | "games" | "bots" | "gifts" | "utilities" | "trends" | "ai";
 
 export const SECTIONS: {
   slug: SectionSlug;
@@ -8,10 +8,11 @@ export const SECTIONS: {
   category: string; // для фильтрации APPS по категории
   Icon: typeof Wallet;
 }[] = [
-  { slug: "finance", title: "Финансы", category: "Финансы", Icon: Wallet },
-  { slug: "games", title: "Игры", category: "Игры", Icon: Gamepad2 },
-  { slug: "bots", title: "Боты", category: "Боты", Icon: Bot },
-  { slug: "gifts", title: "Подарки", category: "Подарки", Icon: Gift },
-  { slug: "utilities", title: "Утилиты", category: "Утилиты", Icon: Wrench },
-  { slug: "trends", title: "Тренды", category: "Тренды", Icon: TrendingUp },
+  { slug: "finance", title: "Finance", category: "Финансы", Icon: Wallet },
+  { slug: "games", title: "Games", category: "Игры", Icon: Gamepad2 },
+  { slug: "bots", title: "Bots", category: "Боты", Icon: Bot },
+  { slug: "gifts", title: "Gifts", category: "Подарки", Icon: Gift },
+  { slug: "utilities", title: "Utilities", category: "Утилиты", Icon: Wrench },
+  { slug: "trends", title: "Trends", category: "Тренды", Icon: TrendingUp },
+  { slug: "ai", title: "Neural networks", category: "Нейросети", Icon: Brain },
 ];

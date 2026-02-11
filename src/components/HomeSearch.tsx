@@ -24,6 +24,8 @@ export function HomeSearch() {
   const [query, setQuery] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [focused, setFocused] = useState(false);
+  const [showAllTopCharts, setShowAllTopCharts] = useState(false);
+  const [showAllMore, setShowAllMore] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
 
@@ -43,6 +45,18 @@ export function HomeSearch() {
   const openSuggestions = hasQuery && focused;
   const displaySuggestions = openSuggestions && matches.length > 0;
 
+  const isSearching = hasQuery;
+  const baseApps = apps;
+  const moreApps = baseApps.slice(5);
+
+  const visibleTopCharts = isSearching
+    ? matches
+    : showAllTopCharts
+    ? baseApps
+    : baseApps.slice(0, 5);
+
+  const visibleMoreApps = showAllMore ? moreApps : moreApps.slice(0, 5);
+
   return (
     <div className="min-h-screen pb-24 bg-transparent">
       {/* Фиксированный поискбар без фона, в стиле жидкого стекла */}
@@ -56,13 +70,13 @@ export function HomeSearch() {
             <input
               ref={inputRef}
               type="search"
-              placeholder="Поиск приложений"
+              placeholder="Search apps"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onFocus={() => setFocused(true)}
               onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
               className="flex-1 bg-transparent text-[17px] text-black dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 outline-none min-w-0"
-              aria-label="Поиск"
+              aria-label="Search"
               aria-autocomplete="list"
               aria-expanded={displaySuggestions}
             />
@@ -108,7 +122,7 @@ export function HomeSearch() {
 
         {hasQuery && matches.length === 0 && (
           <p className="mt-2 px-2 text-[15px] text-gray-500 dark:text-gray-400">
-            Ничего не найдено по запросу «{query.trim()}»
+            No results for “{query.trim()}”
           </p>
         )}
       </div>
@@ -120,10 +134,10 @@ export function HomeSearch() {
         </div>
       )}
       {loading && apps.length === 0 && (
-        <div className="p-8 text-center text-gray-500 dark:text-gray-400">Загрузка…</div>
+        <div className="p-8 text-center text-gray-500 dark:text-gray-400">Loading…</div>
       )}
       <header className="p-5 pt-2">
-        <h1 className="text-[34px] font-bold tracking-tight text-black dark:text-white">Сегодня</h1>
+        <h1 className="text-[34px] font-bold tracking-tight text-black dark:text-white">Today</h1>
         <div className="w-full mt-3 overflow-hidden rounded-2xl bg-white/40 dark:bg-gray-800/40 backdrop-blur-md border border-white/30 dark:border-gray-600/30">
           <img
             src="/image123.png"
@@ -135,15 +149,43 @@ export function HomeSearch() {
 
       <section className="mt-2">
         <div className="px-5 mb-4 flex justify-between items-end">
-          <h2 className="text-[22px] font-bold text-black dark:text-white">Топ чарты</h2>
-          <span className="text-[#007AFF] text-[17px]">См. все</span>
+          <h2 className="text-[22px] font-bold text-black dark:text-white">Top charts</h2>
+          <span className="text-[#007AFF] text-[17px]"> </span>
         </div>
 
         <div className="flex flex-col">
-          {(query.trim() ? matches : apps.slice(0, 5)).map((app) => (
+          {visibleTopCharts.map((app) => (
             <AppCard key={app.id} app={app} />
           ))}
         </div>
+        {!isSearching && baseApps.length > 5 && (
+          <div className="px-5 mt-3">
+            <button
+              type="button"
+              onClick={() => {
+                hapticFeedback("light");
+                setShowAllTopCharts((prev) => !prev);
+                // Если раскрыли топ чарты полностью, скрываем нижний раздел,
+                // чтобы не дублировать те же приложения
+                if (!showAllTopCharts) {
+                  setShowAllMore(false);
+                }
+              }}
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-white/40 dark:bg-gray-700/40 text-[#007AFF] font-semibold text-[15px] active:opacity-70 transition-colors border border-white/40 dark:border-gray-600/40"
+            >
+              {showAllTopCharts ? (
+                <>
+                  <span>Hide</span>
+                </>
+              ) : (
+                <>
+                  <span>Show all</span>
+                </>
+              )}
+            </button>
+          </div>
+        )}
+
         <div className="w-full max-w-[calc(100%-2.5rem)] mt-4 mx-5 overflow-hidden rounded-2xl bg-white/40 dark:bg-gray-800/40 backdrop-blur-md border border-white/30 dark:border-gray-600/30 box-border">
           <img
             src="/image99.png"
@@ -151,17 +193,33 @@ export function HomeSearch() {
             className="max-w-full w-full h-auto object-contain object-left block"
           />
         </div>
-        {!query.trim() && apps.length > 5 && (
-          <div className="flex flex-col mt-4">
-            {apps.slice(5).map((app) => (
-              <AppCard key={app.id} app={app} />
-            ))}
-          </div>
+        {!isSearching && !showAllTopCharts && moreApps.length > 0 && (
+          <>
+            <div className="flex flex-col mt-4">
+              {visibleMoreApps.map((app) => (
+                <AppCard key={app.id} app={app} />
+              ))}
+            </div>
+            {moreApps.length > 5 && (
+              <div className="px-5 mt-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    hapticFeedback("light");
+                    setShowAllMore((prev) => !prev);
+                  }}
+                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-white/40 dark:bg-gray-700/40 text-[#007AFF] font-semibold text-[15px] active:opacity-70 transition-colors border border-white/40 dark:border-gray-600/40"
+                >
+                  {showAllMore ? "Hide" : "Show all"}
+                </button>
+              </div>
+            )}
+          </>
         )}
       </section>
 
       <p className="mt-10 mb-6 mx-auto px-4 max-w-[36rem] text-center text-[13px] leading-relaxed text-gray-600 dark:text-gray-400">
-        Наш маркет помогает вам находить лучшие сервисы в Telegram. Мы заботливо собираем их в одном месте, но важно помнить: каждое приложение создано независимыми разработчиками. Мы не присваиваем себе авторство сторонних проектов и не можем гарантировать их бесперебойную работу. Мы не занимаемся пропагандой каких-либо идей, товаров или взглядов — наш сервис носит исключительно информационный характер. Пользуйтесь с удовольствием, но будьте бдительны!
+        Our marketplace helps you discover the best services in Telegram. We carefully collect them in one place, but it&apos;s important to remember that every app is created by independent developers. We do not claim authorship of third-party projects and cannot guarantee their uninterrupted operation. We do not promote any ideas, products, or views—the service is for informational purposes only. Enjoy using it, but stay vigilant!
       </p>
 
       <BottomNav active="main" />

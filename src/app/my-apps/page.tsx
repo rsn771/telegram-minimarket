@@ -20,9 +20,9 @@ export default function MyAppsPage() {
             <Search size={20} className="text-gray-500 dark:text-gray-400 shrink-0" />
             <input
               type="search"
-              placeholder="Поиск"
+              placeholder="Search"
               className="flex-1 bg-transparent text-[17px] text-black dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 outline-none min-w-0"
-              aria-label="Поиск"
+              aria-label="Search"
             />
           </div>
           <ThemeToggle />
@@ -31,15 +31,15 @@ export default function MyAppsPage() {
 
       <div className="pt-[calc(env(safe-area-inset-top,20px)+56px)]">
       <header className="p-5 pt-4">
-        <h1 className="text-[34px] font-bold tracking-tight text-black dark:text-white">Мои приложения</h1>
+        <h1 className="text-[34px] font-bold tracking-tight text-black dark:text-white">My apps</h1>
       </header>
 
       <section className="mt-2">
         {loading && myApps.length === 0 ? (
-          <div className="px-5 py-12 text-center text-gray-500 dark:text-gray-400 text-[15px]">Загрузка…</div>
+          <div className="px-5 py-12 text-center text-gray-500 dark:text-gray-400 text-[15px]">Loading…</div>
         ) : myApps.length === 0 ? (
           <div className="px-5 py-12 text-center text-gray-500 dark:text-gray-400 text-[15px] rounded-2xl mx-2 bg-white/40 dark:bg-gray-800/40 backdrop-blur-md border border-white/30 dark:border-gray-600/30">
-            Пока ничего нет. Нажмите + на карточке приложения или на странице приложения, чтобы добавить сюда.
+            Nothing here yet. Tap + on a card or on an app page to add it.
           </div>
         ) : (
           <div className="flex flex-col">

@@ -69,7 +69,7 @@ export const AppCard = ({ app, openDirectly = false }: { app: AppItem; openDirec
         <button
           type="button"
           onClick={handlePlus}
-          aria-label={inMyApps ? "Убрать из моих приложений" : "Добавить в мои приложения"}
+          aria-label={inMyApps ? "Remove from My apps" : "Add to My apps"}
           className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors active:scale-95 ${
             inMyApps ? "bg-[#007AFF] text-white" : "bg-white/60 dark:bg-gray-700/60 text-gray-500 dark:text-gray-400 border border-white/40 dark:border-gray-600/40"
           }`}
@@ -88,7 +88,7 @@ export const AppCard = ({ app, openDirectly = false }: { app: AppItem; openDirec
             onClick={handleOpenDirect}
             className="bg-white/60 dark:bg-gray-700/60 text-[#007AFF] px-5 py-1.5 rounded-full font-bold text-[13px] uppercase active:opacity-70 border border-white/40 dark:border-gray-600/40"
           >
-            Открыть
+            Open
           </button>
         ) : (
           <Link
@@ -96,7 +96,7 @@ export const AppCard = ({ app, openDirectly = false }: { app: AppItem; openDirec
             onClick={handleClick}
             className="bg-white/60 dark:bg-gray-700/60 text-[#007AFF] px-5 py-1.5 rounded-full font-bold text-[13px] uppercase active:opacity-70 border border-white/40 dark:border-gray-600/40"
           >
-            Открыть
+            Open
           </Link>
         )}
       </div>

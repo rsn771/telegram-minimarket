@@ -24,16 +24,16 @@ export default function SectionPage() {
   if (loading && apps.length === 0 && section) {
     return (
       <div className="min-h-screen pb-24 bg-transparent flex flex-col items-center justify-center p-5">
-        <p className="text-gray-500 dark:text-gray-400">Загрузка…</p>
+        <p className="text-gray-500 dark:text-gray-400">Loading…</p>
       </div>
     );
   }
   if (!section) {
     return (
       <div className="min-h-screen pb-24 bg-transparent flex flex-col items-center justify-center p-5">
-        <p className="text-gray-500 dark:text-gray-400 text-center">Раздел не найден</p>
+        <p className="text-gray-500 dark:text-gray-400 text-center">Section not found</p>
         <button onClick={() => router.back()} className="mt-4 text-[#007AFF] font-medium">
-          Назад
+          Back
         </button>
       </div>
     );
@@ -52,7 +52,7 @@ export default function SectionPage() {
           className="flex items-center gap-0 text-[#007AFF] font-normal text-[17px]"
         >
           <ChevronLeft size={28} strokeWidth={2} />
-          <span className="-ml-1">Назад</span>
+          <span className="-ml-1">Back</span>
         </button>
         <div className="flex items-center gap-2 flex-1 min-w-0">
           <div className="w-8 h-8 rounded-xl bg-white/50 dark:bg-gray-700/50 flex items-center justify-center shrink-0 border border-white/40 dark:border-gray-600/40">
@@ -65,7 +65,7 @@ export default function SectionPage() {
       <section className="mt-2">
         {apps.length === 0 ? (
           <div className="px-5 py-12 text-center text-gray-500 dark:text-gray-400 text-[15px] rounded-2xl mx-2 bg-white/40 dark:bg-gray-800/40 backdrop-blur-md border border-white/30 dark:border-gray-600/30">
-            В этом разделе пока нет приложений.
+            There are no apps in this section yet.
           </div>
         ) : (
           <div className="flex flex-col">
