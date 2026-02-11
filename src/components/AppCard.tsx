@@ -88,7 +88,7 @@ export const AppCard = ({ app, openDirectly = false }: { app: AppItem; openDirec
             onClick={handleOpenDirect}
             className="bg-white/60 dark:bg-gray-700/60 text-[#007AFF] px-5 py-1.5 rounded-full font-bold text-[13px] uppercase active:opacity-70 border border-white/40 dark:border-gray-600/40"
           >
-            Open
+            Открыть
           </button>
         ) : (
           <Link
@@ -96,7 +96,7 @@ export const AppCard = ({ app, openDirectly = false }: { app: AppItem; openDirec
             onClick={handleClick}
             className="bg-white/60 dark:bg-gray-700/60 text-[#007AFF] px-5 py-1.5 rounded-full font-bold text-[13px] uppercase active:opacity-70 border border-white/40 dark:border-gray-600/40"
           >
-            Open
+            Открыть
           </Link>
         )}
       </div>

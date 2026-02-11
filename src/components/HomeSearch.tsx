@@ -50,6 +50,7 @@ export function HomeSearch() {
 
   // Жёстко заданный порядок топ‑чартов
   const TOP_CHARTS_ORDER = [
+    "notcoin",
     "portals",
     "tonnel",
     "void",
