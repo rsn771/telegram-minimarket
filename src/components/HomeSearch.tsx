@@ -46,16 +46,19 @@ export function HomeSearch() {
   const displaySuggestions = openSuggestions && matches.length > 0;
 
   const isSearching = hasQuery;
-  const baseApps = apps;
-  const moreApps = baseApps.slice(5);
+  const TOP_CHARTS_VISIBLE = 5;
+  const TOP_CHARTS_MAX = 10;
+
+  const topChartsApps = apps.slice(0, TOP_CHARTS_MAX);
+  const moreApps = apps.slice(TOP_CHARTS_MAX);
 
   const visibleTopCharts = isSearching
     ? matches
     : showAllTopCharts
-    ? baseApps
-    : baseApps.slice(0, 5);
+    ? topChartsApps
+    : topChartsApps.slice(0, TOP_CHARTS_VISIBLE);
 
-  const visibleMoreApps = showAllMore ? moreApps : moreApps.slice(0, 5);
+  const visibleMoreApps = showAllMore ? moreApps : moreApps.slice(0, TOP_CHARTS_VISIBLE);
 
   return (
     <div className="min-h-screen pb-24 bg-transparent">
@@ -158,7 +161,7 @@ export function HomeSearch() {
             <AppCard key={app.id} app={app} />
           ))}
         </div>
-        {!isSearching && baseApps.length > 5 && (
+        {!isSearching && topChartsApps.length > TOP_CHARTS_VISIBLE && (
           <div className="px-5 mt-3">
             <button
               type="button"
