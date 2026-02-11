@@ -51,12 +51,11 @@ export function HomeSearch() {
   // Жёстко заданный порядок топ‑чартов
   const TOP_CHARTS_ORDER = [
     "notcoin",
-    "portals",
-    "tonnel",
     "void",
-    "random beast",
     "major",
-    "gigachad",
+    "portals market",
+    "gigachat",
+    "random beast",
   ];
 
   // Собираем список приложений для топ‑чартов по имени (без учёта регистра)
