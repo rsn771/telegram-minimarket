@@ -47,13 +47,33 @@ export function HomeSearch() {
 
   const isSearching = hasQuery;
   const TOP_CHARTS_VISIBLE = 5;
-  const TOP_CHARTS_MAX = 10;
 
-  // Формируем «топ чарты» как приложения с наибольшим рейтингом
-  const sortedByRating = [...apps].sort((a, b) => Number(b.rating) - Number(a.rating));
-  const topChartsApps = sortedByRating.slice(0, TOP_CHARTS_MAX);
-  // Остальные приложения идут в нижний раздел под второй картинкой
-  const moreApps = sortedByRating.slice(TOP_CHARTS_MAX);
+  // Жёстко заданный порядок топ‑чартов
+  const TOP_CHARTS_ORDER = [
+    "portals",
+    "tonnel",
+    "void",
+    "random beast",
+    "major",
+    "gigachad",
+  ];
+
+  // Собираем список приложений для топ‑чартов по имени (без учёта регистра)
+  const topChartsApps: AppItem[] = [];
+  const topChartsIds = new Set<string>();
+
+  for (const name of TOP_CHARTS_ORDER) {
+    const found = apps.find(
+      (app) => app.name.trim().toLowerCase() === name.toLowerCase()
+    );
+    if (found && !topChartsIds.has(String(found.id))) {
+      topChartsApps.push(found);
+      topChartsIds.add(String(found.id));
+    }
+  }
+
+  // Остальные приложения идут в нижний список под второй картинкой
+  const moreApps = apps.filter((app) => !topChartsIds.has(String(app.id)));
 
   const visibleTopCharts = isSearching
     ? matches
@@ -171,11 +191,6 @@ export function HomeSearch() {
               onClick={() => {
                 hapticFeedback("light");
                 setShowAllTopCharts((prev) => !prev);
-                // Если раскрыли топ чарты полностью, скрываем нижний раздел,
-                // чтобы не дублировать те же приложения
-                if (!showAllTopCharts) {
-                  setShowAllMore(false);
-                }
               }}
               className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-white/40 dark:bg-gray-700/40 text-[#007AFF] font-semibold text-[15px] active:opacity-70 transition-colors border border-white/40 dark:border-gray-600/40"
             >
@@ -191,7 +206,7 @@ export function HomeSearch() {
             className="max-w-full w-full h-auto object-contain object-left block"
           />
         </div>
-        {!isSearching && !showAllTopCharts && moreApps.length > 0 && (
+        {!isSearching && moreApps.length > 0 && (
           <>
             <div className="flex flex-col mt-4">
               {visibleMoreApps.map((app) => (
