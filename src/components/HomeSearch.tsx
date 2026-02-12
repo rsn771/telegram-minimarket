@@ -19,15 +19,84 @@ function filterApps(apps: AppItem[], query: string): AppItem[] {
   );
 }
 
+const STORAGE_KEY = "home-expand";
+const SCROLL_KEY = "home-scroll";
+
+function loadExpanded(): { topCharts: boolean; neural: boolean; games: boolean } {
+  if (typeof window === "undefined") return { topCharts: false, neural: false, games: false };
+  try {
+    const raw = sessionStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw) as { topCharts?: boolean; neural?: boolean; games?: boolean };
+      return {
+        topCharts: !!parsed.topCharts,
+        neural: !!parsed.neural,
+        games: !!parsed.games,
+      };
+    }
+  } catch {
+    // ignore
+  }
+  return { topCharts: false, neural: false, games: false };
+}
+
+function saveExpanded(expanded: { topCharts: boolean; neural: boolean; games: boolean }) {
+  if (typeof window === "undefined") return;
+  try {
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(expanded));
+  } catch {
+    // ignore
+  }
+}
+
 export function HomeSearch() {
   const { apps, loading, error } = useApps();
   const [query, setQuery] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [focused, setFocused] = useState(false);
   const [showAllTopCharts, setShowAllTopCharts] = useState(false);
-  const [showAllMore, setShowAllMore] = useState(false);
+  const [showAllNeural, setShowAllNeural] = useState(false);
+  const [showAllGames, setShowAllGames] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
+  const scrollRestoredRef = useRef(false);
+
+  useEffect(() => {
+    const saved = loadExpanded();
+    setShowAllTopCharts(saved.topCharts);
+    setShowAllNeural(saved.neural);
+    setShowAllGames(saved.games);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (typeof window !== "undefined") {
+        try {
+          sessionStorage.setItem(SCROLL_KEY, String(window.scrollY));
+        } catch {
+          // ignore
+        }
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (scrollRestoredRef.current) return;
+    const raw = typeof window !== "undefined" ? sessionStorage.getItem(SCROLL_KEY) : null;
+    if (raw === null) return;
+    const y = parseInt(raw, 10);
+    if (Number.isNaN(y)) return;
+    scrollRestoredRef.current = true;
+    try {
+      sessionStorage.removeItem(SCROLL_KEY);
+    } catch {
+      // ignore
+    }
+    const id = requestAnimationFrame(() => {
+      window.scrollTo(0, y);
+    });
+    return () => cancelAnimationFrame(id);
+  }, [showAllTopCharts, showAllNeural, showAllGames]);
 
   const matches = useMemo(() => filterApps(apps, query), [apps, query]);
   const hasQuery = query.trim().length > 0;
@@ -72,8 +141,9 @@ export function HomeSearch() {
     }
   }
 
-  // Остальные приложения идут в нижний список под второй картинкой
-  const moreApps = apps.filter((app) => !topChartsIds.has(String(app.id)));
+  const categoryNorm = (s: string) => (s || "").trim().toLowerCase();
+  const neuralApps = apps.filter((app) => categoryNorm(app.category) === "нейросети");
+  const gamesApps = apps.filter((app) => categoryNorm(app.category) === "игры");
 
   const visibleTopCharts = isSearching
     ? matches
@@ -81,7 +151,17 @@ export function HomeSearch() {
     ? topChartsApps
     : topChartsApps.slice(0, TOP_CHARTS_VISIBLE);
 
-  const visibleMoreApps = showAllMore ? moreApps : moreApps.slice(0, TOP_CHARTS_VISIBLE);
+  const visibleNeuralApps = showAllNeural ? neuralApps : neuralApps.slice(0, TOP_CHARTS_VISIBLE);
+  const visibleGamesApps = showAllGames ? gamesApps : gamesApps.slice(0, TOP_CHARTS_VISIBLE);
+
+  const persistExpand = (updates: { topCharts?: boolean; neural?: boolean; games?: boolean }) => {
+    const next = {
+      topCharts: updates.topCharts ?? showAllTopCharts,
+      neural: updates.neural ?? showAllNeural,
+      games: updates.games ?? showAllGames,
+    };
+    saveExpanded(next);
+  };
 
   return (
     <div className="min-h-screen pb-24 bg-transparent">
@@ -190,7 +270,11 @@ export function HomeSearch() {
               type="button"
               onClick={() => {
                 hapticFeedback("light");
-                setShowAllTopCharts((prev) => !prev);
+                setShowAllTopCharts((prev) => {
+                  const next = !prev;
+                  persistExpand({ topCharts: next });
+                  return next;
+                });
               }}
               className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-white/40 dark:bg-gray-700/40 text-[#007AFF] font-semibold text-[15px] active:opacity-70 transition-colors border border-white/40 dark:border-gray-600/40"
             >
@@ -206,24 +290,65 @@ export function HomeSearch() {
             className="max-w-full w-full h-auto object-contain object-left block"
           />
         </div>
-        {!isSearching && moreApps.length > 0 && (
+
+        {!isSearching && neuralApps.length > 0 && (
           <>
             <div className="flex flex-col mt-4">
-              {visibleMoreApps.map((app) => (
+              {visibleNeuralApps.map((app) => (
                 <AppCard key={app.id} app={app} />
               ))}
             </div>
-            {moreApps.length > TOP_CHARTS_VISIBLE && (
+            {neuralApps.length > TOP_CHARTS_VISIBLE && (
               <div className="px-5 mt-3">
                 <button
                   type="button"
                   onClick={() => {
                     hapticFeedback("light");
-                    setShowAllMore((prev) => !prev);
+                    setShowAllNeural((prev) => {
+                      const next = !prev;
+                      persistExpand({ neural: next });
+                      return next;
+                    });
                   }}
                   className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-white/40 dark:bg-gray-700/40 text-[#007AFF] font-semibold text-[15px] active:opacity-70 transition-colors border border-white/40 dark:border-gray-600/40"
                 >
-                  {showAllMore ? "Скрыть" : "Показать все"}
+                  {showAllNeural ? "Скрыть" : "Показать все"}
+                </button>
+              </div>
+            )}
+          </>
+        )}
+
+        <div className="w-full max-w-[calc(100%-2.5rem)] mt-4 mx-5 overflow-hidden rounded-2xl bg-white/40 dark:bg-gray-800/40 backdrop-blur-md border border-white/30 dark:border-gray-600/30 box-border">
+          <img
+            src="/image99.png"
+            alt="Mini Market"
+            className="max-w-full w-full h-auto object-contain object-left block"
+          />
+        </div>
+
+        {!isSearching && gamesApps.length > 0 && (
+          <>
+            <div className="flex flex-col mt-4">
+              {visibleGamesApps.map((app) => (
+                <AppCard key={app.id} app={app} />
+              ))}
+            </div>
+            {gamesApps.length > TOP_CHARTS_VISIBLE && (
+              <div className="px-5 mt-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    hapticFeedback("light");
+                    setShowAllGames((prev) => {
+                      const next = !prev;
+                      persistExpand({ games: next });
+                      return next;
+                    });
+                  }}
+                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-white/40 dark:bg-gray-700/40 text-[#007AFF] font-semibold text-[15px] active:opacity-70 transition-colors border border-white/40 dark:border-gray-600/40"
+                >
+                  {showAllGames ? "Скрыть" : "Показать все"}
                 </button>
               </div>
             )}
