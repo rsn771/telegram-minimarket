@@ -39,6 +39,17 @@ function useBannerIcons(apps: AppItem[], count: number): AppItem[] {
   }, [apps, count]);
 }
 
+// Отдельные позиции для иконок, чтобы не залазили на текст и другие иконки
+function getIconPosition(
+  app: AppItem,
+  place: { top: string; left: string }
+): { top: string; left: string } {
+  const name = (app.name || "").trim().toLowerCase();
+  if (name === "major") return { top: "5%", left: "12%" };
+  if (name.includes("magic") && name.includes("market")) return { top: "91%", left: "88%" };
+  return { top: place.top, left: place.left };
+}
+
 export function HeroBanner() {
   const { apps } = useApps();
   const bannerIcons = useBannerIcons(apps, ICON_PLACES.length);
@@ -70,6 +81,7 @@ export function HeroBanner() {
         {bannerIcons.map((app, i) => {
           const place = ICON_PLACES[i];
           if (!place) return null;
+          const { top, left } = getIconPosition(app, place);
           const transform = place.rotateY
             ? `perspective(400px) rotate(${place.rotate}deg) rotateY(${place.rotateY}deg) scale(${place.scale})`
             : `perspective(400px) rotate(${place.rotate}deg) scale(${place.scale})`;
@@ -78,8 +90,8 @@ export function HeroBanner() {
               key={`${app.id}-${i}`}
               className="absolute animate-icon-float"
               style={{
-                top: place.top,
-                left: place.left,
+                top,
+                left,
                 width: "clamp(44px, 14vw, 72px)",
                 height: "clamp(44px, 14vw, 72px)",
                 animationDelay: `${(i * 0.12) % 3.5}s`,
