@@ -22,3 +22,36 @@
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 }
+
+@keyframes gradient-shift {
+  0% {
+    background-position: 0% 0%;
+  }
+  33% {
+    background-position: 100% 50%;
+  }
+  66% {
+    background-position: 50% 100%;
+  }
+  100% {
+    background-position: 0% 0%;
+  }
+}
+
+.animate-gradient-shift {
+  background-size: 200% 200%;
+  animation: gradient-shift 14s ease-in-out infinite;
+}
+
+@keyframes icon-float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.animate-icon-float {
+  animation: icon-float 3.5s ease-in-out infinite;
+}

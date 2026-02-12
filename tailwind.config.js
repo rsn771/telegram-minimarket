@@ -18,6 +18,7 @@ module.exports = {
           'Arial',
           'sans-serif',
         ],
+        nunito: ["var(--font-nunito)", "sans-serif"],
       },
       colors: {
         'apple-blue': '#007AFF',

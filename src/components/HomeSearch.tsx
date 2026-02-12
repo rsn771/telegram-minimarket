@@ -5,6 +5,7 @@ import { Search } from "lucide-react";
 import Link from "next/link";
 import { AppCard } from "@/components/AppCard";
 import { BottomNav } from "@/components/BottomNav";
+import { HeroBanner } from "@/components/HeroBanner";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useApps, type AppItem } from "@/context/AppsContext";
 import { hapticFeedback } from "@/utils/telegram";
@@ -244,16 +245,12 @@ export function HomeSearch() {
       )}
       <header className="p-5 pt-2">
         <h1 className="text-[34px] font-bold tracking-tight text-black dark:text-white">Сегодня</h1>
-        <div className="w-full mt-3 overflow-hidden rounded-2xl bg-white/40 dark:bg-gray-800/40 backdrop-blur-md border border-white/30 dark:border-gray-600/30">
-          <img
-            src="/image123.png"
-            alt="Mini Market"
-            className="w-full h-auto object-contain object-left block"
-          />
+        <div className="w-full mt-3 overflow-hidden">
+          <HeroBanner />
         </div>
       </header>
 
-      <section className="mt-2">
+      <section id="top-charts" className="mt-2 scroll-mt-[calc(env(safe-area-inset-top,20px)+64px)]">
         <div className="px-5 mb-4 flex justify-between items-end">
           <h2 className="text-[22px] font-bold text-black dark:text-white">Топ чарты</h2>
           <span className="text-[#007AFF] text-[17px]"> </span>

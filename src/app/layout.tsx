@@ -1,6 +1,14 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
+import { Nunito } from "next/font/google";
 import "./globals.css";
+
+const nunito = Nunito({
+  subsets: ["latin", "cyrillic"],
+  weight: ["700", "800", "900"],
+  variable: "--font-nunito",
+  display: "swap",
+});
 import { TelegramWebApp } from "@/components/TelegramWebApp";
 import { SplashScreen } from "@/components/SplashScreen";
 import { AppsProvider } from "@/context/AppsContext";
@@ -30,7 +38,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ru">
+    <html lang="ru" className={nunito.variable}>
       <head>
         <Script
           src="https://telegram.org/js/telegram-web-app.js"
