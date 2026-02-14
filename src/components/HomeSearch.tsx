@@ -4,6 +4,7 @@ import { useState, useMemo, useRef, useEffect } from "react";
 import { Search } from "lucide-react";
 import Link from "next/link";
 import { AppCard } from "@/components/AppCard";
+import { AppIcon } from "@/components/AppIcon";
 import { BottomNav } from "@/components/BottomNav";
 import { HeroBanner } from "@/components/HeroBanner";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -208,7 +209,7 @@ export function HomeSearch() {
                     className="flex items-center gap-3 px-4 py-3 active:bg-black/5 dark:active:bg-white/5 transition-colors"
                   >
                     <div className="w-10 h-10 flex-shrink-0 overflow-hidden rounded-[18%] border border-gray-200/80 dark:border-gray-600/80">
-                      <img src={app.icon} alt="" className="w-full h-full object-cover" />
+                      <AppIcon src={app.icon} alt={app.name} className="w-full h-full object-cover" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-[15px] text-black dark:text-white truncate">

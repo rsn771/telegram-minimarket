@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronDown, ChevronUp, Star, ShieldCheck, Plus } from "lu
 import { hapticFeedback } from "@/utils/telegram";
 import { useApps } from "@/context/AppsContext";
 import { useMyApps } from "@/context/MyAppsContext";
+import { AppIcon } from "@/components/AppIcon";
 
 type Review = {
   id: number;
@@ -204,7 +205,7 @@ export default function AppDetail() {
       <div className="mx-3 mt-4 rounded-2xl bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border border-white/40 dark:border-gray-600/40 pb-6 overflow-hidden">
         <div className="px-5 flex gap-5 mt-4">
           <div className="relative shrink-0">
-            <img src={app.icon} className="w-28 h-28 rounded-[22%] shadow-lg border border-white/40 dark:border-gray-600/40 object-cover" alt={app.name} />
+            <AppIcon src={app.icon} alt={app.name} className="w-28 h-28 rounded-[22%] shadow-lg border border-white/40 dark:border-gray-600/40 object-cover" />
           </div>
           <div className="flex flex-col justify-between py-1">
             <div>

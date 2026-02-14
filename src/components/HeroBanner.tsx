@@ -3,6 +3,7 @@
 import { useApps, type AppItem } from "@/context/AppsContext";
 import { useMemo } from "react";
 import { hapticFeedback } from "@/utils/telegram";
+import { AppIcon } from "@/components/AppIcon";
 
 // Иконки по краям, центр свободен под текст — больше иконок, крупнее
 const ICON_PLACES: { top: string; left: string; rotate: number; scale: number; rotateY?: number }[] = [
@@ -104,11 +105,10 @@ export function HeroBanner() {
                   transformOrigin: "center center",
                 }}
               >
-                <img
+                <AppIcon
                   src={app.icon}
-                  alt=""
+                  alt={app.name}
                   className="w-full h-full object-cover"
-                  loading="lazy"
                 />
               </div>
             </div>

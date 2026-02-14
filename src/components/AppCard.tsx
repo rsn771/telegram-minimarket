@@ -6,6 +6,7 @@ import Link from "next/link";
 import { hapticFeedback } from "@/utils/telegram";
 import { truncateToTwoLines } from "@/utils/text";
 import { useMyApps } from "@/context/MyAppsContext";
+import { AppIcon } from "@/components/AppIcon";
 import type { AppItem } from "@/context/AppsContext";
 
 function openAppUrl(url: string) {
@@ -54,7 +55,7 @@ export const AppCard = ({ app, openDirectly = false, showAddButton = true }: { a
     <div className="flex items-center gap-4 p-4 mx-2 rounded-2xl active:bg-white/50 dark:active:bg-gray-800/50 transition-colors">
       <Link href={`/app/${app.id}`} className="flex items-center gap-4 flex-1 min-w-0" onClick={handleClick}>
         <div className="w-16 h-16 flex-shrink-0 overflow-hidden rounded-[22%] border border-white/40 dark:border-gray-600/40 shadow-sm">
-          <img src={app.icon} className="w-full h-full object-cover" alt={app.name} />
+          <AppIcon src={app.icon} alt={app.name} className="w-full h-full object-cover" />
         </div>
         <div className="flex-1 border-b border-gray-200/80 dark:border-gray-600/80 pb-4 min-w-0">
           <h3 className="font-bold text-[17px] text-black dark:text-white tracking-tight truncate">
