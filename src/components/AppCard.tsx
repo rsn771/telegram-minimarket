@@ -62,7 +62,7 @@ export const AppCard = ({ app, openDirectly = false }: { app: AppItem; openDirec
             {app.name}
           </h3>
           <p className="text-gray-500 dark:text-gray-400 text-[14px] mt-0.5 whitespace-pre-line line-clamp-2">
-            {truncateToTwoLines(app.shortDescription?.trim() || app.description?.trim() || "", 38, 76)}
+            {truncateToTwoLines(app.shortDescription?.trim() || app.description?.trim() || "", 42, 92)}
           </p>
           <div className="flex items-center gap-1 mt-1">
             <Star size={10} className="fill-gray-400 stroke-none" />

@@ -216,7 +216,7 @@ export function HomeSearch() {
                         {app.name} <span className="text-[12px] text-gray-500 dark:text-gray-400 font-normal">{app.category}</span>
                       </p>
                       <p className="text-[13px] text-gray-500 dark:text-gray-400 whitespace-pre-line line-clamp-2 mt-0.5">
-                        {truncateToTwoLines(app.shortDescription?.trim() || app.description?.trim() || "", 38, 76)}
+                        {truncateToTwoLines(app.shortDescription?.trim() || app.description?.trim() || "", 42, 92)}
                       </p>
                     </div>
                   </Link>
