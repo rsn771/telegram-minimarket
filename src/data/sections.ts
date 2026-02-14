@@ -1,6 +1,6 @@
-import { Wallet, Gamepad2, Bot, Gift, Wrench, TrendingUp, Brain } from "lucide-react";
+import { Wallet, Gamepad2, Gift, Wrench, TrendingUp, Brain } from "lucide-react";
 
-export type SectionSlug = "finance" | "games" | "bots" | "gifts" | "utilities" | "trends" | "ai";
+export type SectionSlug = "finance" | "games" | "gifts" | "utilities" | "trends" | "ai";
 
 export const SECTIONS: {
   slug: SectionSlug;
@@ -10,7 +10,6 @@ export const SECTIONS: {
 }[] = [
   { slug: "finance", title: "Финансы", category: "Финансы", Icon: Wallet },
   { slug: "games", title: "Игры", category: "Игры", Icon: Gamepad2 },
-  { slug: "bots", title: "Боты", category: "Боты", Icon: Bot },
   { slug: "gifts", title: "Подарки", category: "Подарки", Icon: Gift },
   { slug: "utilities", title: "Утилиты", category: "Утилиты", Icon: Wrench },
   { slug: "trends", title: "Тренды", category: "Тренды", Icon: TrendingUp },
