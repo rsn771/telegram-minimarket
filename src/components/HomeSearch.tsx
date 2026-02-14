@@ -10,7 +10,6 @@ import { HeroBanner } from "@/components/HeroBanner";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useApps, type AppItem } from "@/context/AppsContext";
 import { hapticFeedback } from "@/utils/telegram";
-import { truncateToTwoLines } from "@/utils/text";
 
 function filterApps(apps: AppItem[], query: string): AppItem[] {
   if (!query.trim()) return apps;
@@ -215,8 +214,8 @@ export function HomeSearch() {
                       <p className="font-semibold text-[15px] text-black dark:text-white truncate">
                         {app.name} <span className="text-[12px] text-gray-500 dark:text-gray-400 font-normal">{app.category}</span>
                       </p>
-                      <p className="text-[13px] text-gray-500 dark:text-gray-400 whitespace-pre-line line-clamp-2 mt-0.5">
-                        {truncateToTwoLines(app.shortDescription?.trim() || app.description?.trim() || "", 42, 92)}
+                      <p className="text-[13px] text-gray-500 dark:text-gray-400 line-clamp-2 break-words overflow-hidden mt-0.5">
+                        {(app.shortDescription?.trim() || app.description?.trim() || "").slice(0, 280)}
                       </p>
                     </div>
                   </Link>

@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { Star, Plus } from "lucide-react";
 import Link from "next/link";
 import { hapticFeedback } from "@/utils/telegram";
-import { truncateToTwoLines } from "@/utils/text";
 import { useMyApps } from "@/context/MyAppsContext";
 import { AppIcon } from "@/components/AppIcon";
 import type { AppItem } from "@/context/AppsContext";
@@ -61,8 +60,8 @@ export const AppCard = ({ app, openDirectly = false }: { app: AppItem; openDirec
           <h3 className="font-bold text-[17px] text-black dark:text-white tracking-tight truncate">
             {app.name}
           </h3>
-          <p className="text-gray-500 dark:text-gray-400 text-[14px] mt-0.5 whitespace-pre-line line-clamp-2">
-            {truncateToTwoLines(app.shortDescription?.trim() || app.description?.trim() || "", 42, 92)}
+          <p className="text-gray-500 dark:text-gray-400 text-[14px] mt-0.5 line-clamp-2 break-words overflow-hidden">
+            {(app.shortDescription?.trim() || app.description?.trim() || "").slice(0, 280)}
           </p>
           <div className="flex items-center gap-1 mt-1">
             <Star size={10} className="fill-gray-400 stroke-none" />
