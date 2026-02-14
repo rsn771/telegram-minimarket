@@ -58,7 +58,7 @@ export const AppCard = ({ app, openDirectly = false, showAddButton = true }: { a
         </div>
         <div className="flex-1 border-b border-gray-200/80 dark:border-gray-600/80 pb-4 min-w-0">
           <h3 className="font-bold text-[17px] text-black dark:text-white tracking-tight truncate">
-            {app.name} <span className="text-gray-500 dark:text-gray-400 text-[13px] font-medium">{app.category}</span>
+            {app.name}
           </h3>
           <p className="text-gray-500 dark:text-gray-400 text-[14px] mt-0.5 whitespace-pre-line line-clamp-2">
             {truncateToTwoLines(app.shortDescription?.trim() || app.description?.trim() || "", 27, 45)}
@@ -70,7 +70,13 @@ export const AppCard = ({ app, openDirectly = false, showAddButton = true }: { a
         </div>
       </Link>
 
-      <div className="flex items-center gap-2 shrink-0">
+      <div className="flex flex-col items-end gap-1 shrink-0">
+        {app.category ? (
+          <span className="text-gray-500 dark:text-gray-400 text-[13px] font-medium truncate max-w-[120px] text-right" title={app.category}>
+            {app.category}
+          </span>
+        ) : null}
+        <div className="flex items-center gap-2">
         {showAddButton && (
           <button
             type="button"
@@ -106,6 +112,7 @@ export const AppCard = ({ app, openDirectly = false, showAddButton = true }: { a
             Открыть
           </Link>
         )}
+        </div>
       </div>
     </div>
   );
