@@ -70,7 +70,7 @@ export default function SectionPage() {
         ) : (
           <div className="flex flex-col">
             {apps.map((app) => (
-              <AppCard key={app.id} app={app} />
+              <AppCard key={app.id} app={app} showAddButton={false} />
             ))}
           </div>
         )}

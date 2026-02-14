@@ -256,7 +256,7 @@ export function HomeSearch() {
 
         <div className="flex flex-col">
           {visibleTopCharts.map((app) => (
-            <AppCard key={app.id} app={app} />
+            <AppCard key={app.id} app={app} showAddButton={false} />
           ))}
         </div>
         {topChartsApps.length > TOP_CHARTS_VISIBLE && (
@@ -290,7 +290,7 @@ export function HomeSearch() {
           <>
             <div className="flex flex-col mt-4">
               {visibleNeuralApps.map((app) => (
-                <AppCard key={app.id} app={app} />
+                <AppCard key={app.id} app={app} showAddButton={false} />
               ))}
             </div>
             {neuralApps.length > TOP_CHARTS_VISIBLE && (
@@ -326,7 +326,7 @@ export function HomeSearch() {
           <>
             <div className="flex flex-col mt-4">
               {visibleGamesApps.map((app) => (
-                <AppCard key={app.id} app={app} />
+                <AppCard key={app.id} app={app} showAddButton={false} />
               ))}
             </div>
             {gamesApps.length > TOP_CHARTS_VISIBLE && (
