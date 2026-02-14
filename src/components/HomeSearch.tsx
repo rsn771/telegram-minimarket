@@ -216,7 +216,7 @@ export function HomeSearch() {
                         {app.name} <span className="text-[12px] text-gray-500 dark:text-gray-400 font-normal">{app.category}</span>
                       </p>
                       <p className="text-[13px] text-gray-500 dark:text-gray-400 whitespace-pre-line line-clamp-2 mt-0.5">
-                        {truncateToTwoLines(app.shortDescription?.trim() || app.description?.trim() || "", 27, 45)}
+                        {truncateToTwoLines(app.shortDescription?.trim() || app.description?.trim() || "", 38, 76)}
                       </p>
                     </div>
                   </Link>
@@ -257,7 +257,7 @@ export function HomeSearch() {
 
         <div className="flex flex-col">
           {visibleTopCharts.map((app) => (
-            <AppCard key={app.id} app={app} showAddButton={false} />
+            <AppCard key={app.id} app={app} />
           ))}
         </div>
         {topChartsApps.length > TOP_CHARTS_VISIBLE && (
@@ -291,7 +291,7 @@ export function HomeSearch() {
           <>
             <div className="flex flex-col mt-4">
               {visibleNeuralApps.map((app) => (
-                <AppCard key={app.id} app={app} showAddButton={false} />
+                <AppCard key={app.id} app={app} />
               ))}
             </div>
             {neuralApps.length > TOP_CHARTS_VISIBLE && (
@@ -327,7 +327,7 @@ export function HomeSearch() {
           <>
             <div className="flex flex-col mt-4">
               {visibleGamesApps.map((app) => (
-                <AppCard key={app.id} app={app} showAddButton={false} />
+                <AppCard key={app.id} app={app} />
               ))}
             </div>
             {gamesApps.length > TOP_CHARTS_VISIBLE && (

@@ -21,7 +21,7 @@ function openAppUrl(url: string) {
   }
 }
 
-export const AppCard = ({ app, openDirectly = false, showAddButton = true }: { app: AppItem; openDirectly?: boolean; showAddButton?: boolean }) => {
+export const AppCard = ({ app, openDirectly = false }: { app: AppItem; openDirectly?: boolean }) => {
   const { toggleApp, isInMyApps } = useMyApps();
   const appId = String(app.id);
   const [mounted, setMounted] = useState(false);
@@ -62,7 +62,7 @@ export const AppCard = ({ app, openDirectly = false, showAddButton = true }: { a
             {app.name}
           </h3>
           <p className="text-gray-500 dark:text-gray-400 text-[14px] mt-0.5 whitespace-pre-line line-clamp-2">
-            {truncateToTwoLines(app.shortDescription?.trim() || app.description?.trim() || "", 27, 45)}
+            {truncateToTwoLines(app.shortDescription?.trim() || app.description?.trim() || "", 38, 76)}
           </p>
           <div className="flex items-center gap-1 mt-1">
             <Star size={10} className="fill-gray-400 stroke-none" />
@@ -78,7 +78,6 @@ export const AppCard = ({ app, openDirectly = false, showAddButton = true }: { a
           </span>
         ) : null}
         <div className="flex items-center gap-2">
-        {showAddButton && (
           <button
             type="button"
             onClick={handlePlus}
@@ -95,24 +94,15 @@ export const AppCard = ({ app, openDirectly = false, showAddButton = true }: { a
               <Plus size={18} strokeWidth={2.5} />
             )}
           </button>
-        )}
-        {openDirectly && app.url ? (
-          <button
-            type="button"
-            onClick={handleOpenDirect}
-            className="bg-white/60 dark:bg-gray-700/60 text-[#007AFF] px-5 py-1.5 rounded-full font-bold text-[13px] uppercase active:opacity-70 border border-white/40 dark:border-gray-600/40"
-          >
-            Открыть
-          </button>
-        ) : (
-          <Link
-            href={`/app/${app.id}`}
-            onClick={handleClick}
-            className="bg-white/60 dark:bg-gray-700/60 text-[#007AFF] px-5 py-1.5 rounded-full font-bold text-[13px] uppercase active:opacity-70 border border-white/40 dark:border-gray-600/40"
-          >
-            Открыть
-          </Link>
-        )}
+          {openDirectly && app.url && (
+            <button
+              type="button"
+              onClick={handleOpenDirect}
+              className="bg-white/60 dark:bg-gray-700/60 text-[#007AFF] px-5 py-1.5 rounded-full font-bold text-[13px] uppercase active:opacity-70 border border-white/40 dark:border-gray-600/40"
+            >
+              Открыть
+            </button>
+          )}
         </div>
       </div>
     </div>

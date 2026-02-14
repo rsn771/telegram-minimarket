@@ -119,20 +119,6 @@ export default function AppDetail() {
   // Вычисляем inMyApps только после монтирования, чтобы избежать проблем с гидратацией
   const inMyApps = mounted ? isInMyApps(String(app.id)) : false;
 
-  const handleOpen = () => {
-    hapticFeedback("medium");
-    if (!app.url) return;
-    const w = typeof window !== "undefined" ? (window as unknown as { Telegram?: { WebApp?: { openTelegramLink?: (url: string) => void; openLink?: (url: string) => void } } }) : null;
-    const tg = w?.Telegram?.WebApp;
-    if (tg && /^https?:\/\/(t\.me|telegram\.me)\//i.test(app.url)) {
-      tg.openTelegramLink?.(app.url);
-    } else if (tg?.openLink) {
-      tg.openLink(app.url);
-    } else {
-      window.open(app.url, "_blank");
-    }
-  };
-
   const handlePlus = () => {
     hapticFeedback("light");
     toggleApp(String(app.id));
@@ -216,7 +202,7 @@ export default function AppDetail() {
               <button
                 type="button"
                 onClick={handlePlus}
-    aria-label={inMyApps ? "Убрать из моих приложений" : "Добавить в мои приложения"}
+                aria-label={inMyApps ? "Убрать из моих приложений" : "Добавить в мои приложения"}
                 className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors active:scale-95 ${
                   inMyApps ? "bg-[#007AFF] text-white" : "bg-white/60 dark:bg-gray-700/60 text-gray-500 dark:text-gray-400 border border-white/40 dark:border-gray-600/40"
                 }`}
@@ -228,12 +214,6 @@ export default function AppDetail() {
                 ) : (
                   <Plus size={18} strokeWidth={2.5} />
                 )}
-              </button>
-              <button 
-                onClick={handleOpen}
-                className="bg-[#007AFF] active:scale-95 transition-transform text-white px-8 py-1.5 rounded-full font-bold text-sm uppercase w-fit shadow-md"
-              >
-                Открыть
               </button>
             </div>
           </div>
