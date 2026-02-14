@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Star, Plus } from "lucide-react";
 import Link from "next/link";
 import { hapticFeedback } from "@/utils/telegram";
+import { truncateToTwoLines } from "@/utils/text";
 import { useMyApps } from "@/context/MyAppsContext";
 import type { AppItem } from "@/context/AppsContext";
 
@@ -56,8 +57,12 @@ export const AppCard = ({ app, openDirectly = false }: { app: AppItem; openDirec
           <img src={app.icon} className="w-full h-full object-cover" alt={app.name} />
         </div>
         <div className="flex-1 border-b border-gray-200/80 dark:border-gray-600/80 pb-4 min-w-0">
-          <h3 className="font-bold text-[17px] text-black dark:text-white tracking-tight">{app.name}</h3>
-          <p className="text-gray-500 dark:text-gray-400 text-[14px]">{app.category}</p>
+          <h3 className="font-bold text-[17px] text-black dark:text-white tracking-tight truncate">
+            {app.name} <span className="text-gray-500 dark:text-gray-400 text-[13px] font-medium">{app.category}</span>
+          </h3>
+          <p className="text-gray-500 dark:text-gray-400 text-[14px] mt-0.5 whitespace-pre-line line-clamp-2">
+            {truncateToTwoLines(app.shortDescription?.trim() || app.description?.trim() || "", 27, 45)}
+          </p>
           <div className="flex items-center gap-1 mt-1">
             <Star size={10} className="fill-gray-400 stroke-none" />
             <span className="text-[12px] text-gray-400 font-bold">{Number(app.rating).toFixed(1)}</span>

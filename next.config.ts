@@ -9,8 +9,6 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  // Убраны CSP заголовки для работы в Telegram Mini App
-  // Telegram требует более гибкую политику безопасности
 };
 
 export default nextConfig;

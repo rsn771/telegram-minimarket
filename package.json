@@ -6,10 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "upload-assets": "node --env-file=.env.local scripts/upload-assets-to-blob.mjs"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2",
+    "@vercel/blob": "^0.26.0",
     "autoprefixer": "^10.4.20",
     "better-sqlite3": "^11.6.0",
     "lucide-react": "^0.563.0",

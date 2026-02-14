@@ -9,6 +9,7 @@ import { HeroBanner } from "@/components/HeroBanner";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useApps, type AppItem } from "@/context/AppsContext";
 import { hapticFeedback } from "@/utils/telegram";
+import { truncateToTwoLines } from "@/utils/text";
 
 function filterApps(apps: AppItem[], query: string): AppItem[] {
   if (!query.trim()) return apps;
@@ -115,7 +116,6 @@ export function HomeSearch() {
   const openSuggestions = hasQuery && focused;
   const displaySuggestions = openSuggestions && matches.length > 0;
 
-  const isSearching = hasQuery;
   const TOP_CHARTS_VISIBLE = 5;
 
   // Жёстко заданный порядок топ‑чартов
@@ -146,9 +146,7 @@ export function HomeSearch() {
   const neuralApps = apps.filter((app) => categoryNorm(app.category) === "нейросети");
   const gamesApps = apps.filter((app) => categoryNorm(app.category) === "игры");
 
-  const visibleTopCharts = isSearching
-    ? matches
-    : showAllTopCharts
+  const visibleTopCharts = showAllTopCharts
     ? topChartsApps
     : topChartsApps.slice(0, TOP_CHARTS_VISIBLE);
 
@@ -214,10 +212,10 @@ export function HomeSearch() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-[15px] text-black dark:text-white truncate">
-                        {app.name}
+                        {app.name} <span className="text-[12px] text-gray-500 dark:text-gray-400 font-normal">{app.category}</span>
                       </p>
-                      <p className="text-[13px] text-gray-500 dark:text-gray-400 truncate">
-                        {app.category}
+                      <p className="text-[13px] text-gray-500 dark:text-gray-400 whitespace-pre-line line-clamp-2 mt-0.5">
+                        {truncateToTwoLines(app.shortDescription?.trim() || app.description?.trim() || "", 27, 45)}
                       </p>
                     </div>
                   </Link>
@@ -261,7 +259,7 @@ export function HomeSearch() {
             <AppCard key={app.id} app={app} />
           ))}
         </div>
-        {!isSearching && topChartsApps.length > TOP_CHARTS_VISIBLE && (
+        {topChartsApps.length > TOP_CHARTS_VISIBLE && (
           <div className="px-5 mt-3">
             <button
               type="button"
@@ -288,7 +286,7 @@ export function HomeSearch() {
           />
         </div>
 
-        {!isSearching && neuralApps.length > 0 && (
+        {neuralApps.length > 0 && (
           <>
             <div className="flex flex-col mt-4">
               {visibleNeuralApps.map((app) => (
@@ -324,7 +322,7 @@ export function HomeSearch() {
           />
         </div>
 
-        {!isSearching && gamesApps.length > 0 && (
+        {gamesApps.length > 0 && (
           <>
             <div className="flex flex-col mt-4">
               {visibleGamesApps.map((app) => (

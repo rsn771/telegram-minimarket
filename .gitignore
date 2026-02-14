@@ -44,3 +44,6 @@ next-env.d.ts
 venv-bot/
 __pycache__/
 *.pyc
+
+# assets на Blob отключены (лимит 2k put/мес). Картинки в репо, раздаём через /api/static
+# database/logo&screens/

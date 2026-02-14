@@ -10,6 +10,7 @@ export type AppItem = {
   rating: number;
   url?: string;
   description?: string;
+  shortDescription?: string;
   screenshots?: string[];
   isVerified?: boolean;
 };
@@ -59,6 +60,7 @@ async function fetchApps(): Promise<AppItem[]> {
         rating: number;
         url?: string;
         description?: string;
+        shortDescription?: string;
         screenshots?: string[];
         isVerified?: boolean;
       }) => ({
@@ -69,6 +71,7 @@ async function fetchApps(): Promise<AppItem[]> {
         rating: c.rating,
         url: c.url,
         description: c.description,
+        shortDescription: c.shortDescription,
         screenshots: c.screenshots,
         isVerified: c.isVerified,
       })

@@ -49,6 +49,8 @@ npm i -g vercel
 vercel
 ```
 
+**Иконки и скриншоты:** хранятся в `database/logo&screens`, отдаются через `/api/static`. При пуше на GitHub папка идёт в репозиторий (обычно до ~500 MB GitHub принимает).
+
 ### Шаг 2: Создание бота в Telegram
 
 1. Откройте [@BotFather](https://t.me/BotFather) в Telegram

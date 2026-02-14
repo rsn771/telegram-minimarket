@@ -1,63 +1,16 @@
 /**
- * Утилиты для работы с Telegram Web App API
+ * Утилиты для Telegram Web App (тактильная отдача и т.д.).
+ * Вне Mini App вызовы просто игнорируются.
  */
 
-export function getTelegramWebApp() {
-  if (typeof window === "undefined") {
-    return null;
+type HapticStyle = "light" | "medium" | "heavy";
+
+export function hapticFeedback(style: HapticStyle = "light"): void {
+  if (typeof window === "undefined") return;
+  const tg = (window as unknown as { Telegram?: { WebApp?: { HapticFeedback?: { impactOccurred: (s: HapticStyle) => void } } } }).Telegram?.WebApp;
+  try {
+    tg?.HapticFeedback?.impactOccurred(style);
+  } catch {
+    // вне Telegram или старый клиент — ничего не делаем
   }
-  return window.Telegram?.WebApp || null;
-}
-
-export function isTelegramWebApp() {
-  return typeof window !== "undefined" && !!window.Telegram?.WebApp;
-}
-
-export function useTelegramTheme() {
-  const tg = getTelegramWebApp();
-  if (!tg) return null;
-  
-  return {
-    bgColor: tg.themeParams.bg_color || "#ffffff",
-    textColor: tg.themeParams.text_color || "#000000",
-    hintColor: tg.themeParams.hint_color || "#999999",
-    linkColor: tg.themeParams.link_color || "#007AFF",
-    buttonColor: tg.themeParams.button_color || "#007AFF",
-    buttonTextColor: tg.themeParams.button_text_color || "#ffffff",
-    secondaryBgColor: tg.themeParams.secondary_bg_color || "#F2F2F7",
-  };
-}
-
-export function hapticFeedback(style: "light" | "medium" | "heavy" | "rigid" | "soft" = "light") {
-  const tg = getTelegramWebApp();
-  if (tg) {
-    tg.HapticFeedback.impactOccurred(style);
-  }
-}
-
-export function showTelegramAlert(message: string) {
-  const tg = getTelegramWebApp();
-  if (tg) {
-    tg.showAlert(message);
-  } else {
-    alert(message);
-  }
-}
-
-export function showTelegramConfirm(message: string): Promise<boolean> {
-  return new Promise((resolve) => {
-    const tg = getTelegramWebApp();
-    if (tg) {
-      tg.showConfirm(message, (confirmed) => {
-        resolve(confirmed);
-      });
-    } else {
-      resolve(confirm(message));
-    }
-  });
-}
-
-export function getTelegramUser() {
-  const tg = getTelegramWebApp();
-  return tg?.initDataUnsafe?.user || null;
 }
