@@ -9,18 +9,22 @@ export const dynamic = "force-dynamic";
 const DB_DIR = path.join(process.cwd(), "database");
 const DB_PATH = path.join(DB_DIR, "telegram_channels.db");
 
-const BLOB_BASE = process.env.BLOB_STORE_URL ?? "";
+// На Vercel папка logo&screens не деплоится (.vercelignore). Картинки — с GitHub raw (можно переопределить через ASSETS_BASE_URL).
+const ASSETS_BASE =
+  process.env.ASSETS_BASE_URL ??
+  process.env.BLOB_STORE_URL ??
+  "https://raw.githubusercontent.com/rsn771/telegram-minimarket/main/database/logo%26screens/";
 
 function getIconUrl(icon: string | null): string {
   if (!icon) return "https://api.dicebear.com/7.x/shapes/svg?seed=default";
   if (icon.startsWith("http://") || icon.startsWith("https://")) return icon;
-  if (BLOB_BASE) return BLOB_BASE + encodeURIComponent(icon);
+  if (ASSETS_BASE) return ASSETS_BASE + encodeURIComponent(icon);
   return `/api/static?file=${encodeURIComponent(icon)}`;
 }
 
 function parseScreenshots(screenshotsPath: string | null): string[] {
   if (!screenshotsPath || typeof screenshotsPath !== "string") return [];
-  const base = BLOB_BASE || "";
+  const base = ASSETS_BASE || "";
   return screenshotsPath
     .split(";")
     .map((s) => s.trim())

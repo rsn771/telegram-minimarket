@@ -49,7 +49,11 @@ npm i -g vercel
 vercel
 ```
 
-**Иконки и скриншоты:** хранятся в `database/logo&screens`, отдаются через `/api/static`. При пуше на GitHub папка идёт в репозиторий (обычно до ~500 MB GitHub принимает).
+**Иконки и скриншоты:** папка `database/logo&screens` в репозитории, но в деплой Vercel не попадает (`.vercelignore`), чтобы не превышать лимит размера функции (300 MB). На Vercel в **Settings → Environment Variables** задай **`ASSETS_BASE_URL`** — публичный URL папки со слэшем в конце, например с GitHub:
+```
+ASSETS_BASE_URL=https://raw.githubusercontent.com/ТВОЙ_ЛОГИН/telegram-minimarket/main/database/logo%26screens/
+```
+(подставь свой логин и ветку; `%26` — это символ `&` в URL). Локально переменную не задавай — картинки отдаются через `/api/static`.
 
 ### Шаг 2: Создание бота в Telegram
 

@@ -1,0 +1,3 @@
+# Не деплоим папку с картинками — лимит функции 300 MB.
+# Иконки/скрины отдаём по ASSETS_BASE_URL (например с GitHub raw или CDN).
+database/logo&screens
