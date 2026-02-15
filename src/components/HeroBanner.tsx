@@ -1,11 +1,14 @@
 "use client";
 
 import { useApps, type AppItem } from "@/context/AppsContext";
-import { useMemo } from "react";
+import { useSplashDone } from "@/components/SplashScreen";
+import { useMemo, useState, useEffect } from "react";
 import { hapticFeedback } from "@/utils/telegram";
 import { AppIcon } from "@/components/AppIcon";
 
-// Иконки по краям, центр свободен под текст — больше иконок, крупнее
+const BANNER_TEXT = "Погрузитесь в мир\nмини-приложений";
+const TYPEWRITER_DELAY_MS = 43;
+
 const ICON_PLACES: { top: string; left: string; rotate: number; scale: number; rotateY?: number }[] = [
   { top: "2%", left: "1%", rotate: -15, scale: 0.9, rotateY: 8 },
   { top: "3%", left: "22%", rotate: 12, scale: 0.85, rotateY: -10 },
@@ -33,18 +36,12 @@ function useBannerIcons(apps: AppItem[], count: number): AppItem[] {
   return useMemo(() => {
     if (apps.length === 0) return [];
     const out: AppItem[] = [];
-    for (let i = 0; i < count; i++) {
-      out.push(apps[i % apps.length]);
-    }
+    for (let i = 0; i < count; i++) out.push(apps[i % apps.length]);
     return out;
   }, [apps, count]);
 }
 
-// Отдельные позиции для иконок, чтобы не залазили на текст и другие иконки
-function getIconPosition(
-  app: AppItem,
-  place: { top: string; left: string }
-): { top: string; left: string } {
+function getIconPosition(app: AppItem, place: { top: string; left: string }) {
   const name = (app.name || "").trim().toLowerCase();
   if (name === "major") return { top: "5%", left: "12%" };
   if (name.includes("magic") && name.includes("market")) return { top: "91%", left: "88%" };
@@ -53,17 +50,22 @@ function getIconPosition(
 
 export function HeroBanner() {
   const { apps } = useApps();
+  const splashDone = useSplashDone();
   const bannerIcons = useBannerIcons(apps, ICON_PLACES.length);
+  const [visibleLength, setVisibleLength] = useState(0);
+
+  useEffect(() => {
+    if (!splashDone || visibleLength >= BANNER_TEXT.length) return;
+    const id = setTimeout(() => setVisibleLength((n) => Math.min(n + 1, BANNER_TEXT.length)), TYPEWRITER_DELAY_MS);
+    return () => clearTimeout(id);
+  }, [splashDone, visibleLength]);
 
   return (
     <div
       className="relative w-full overflow-hidden rounded-2xl bg-white dark:bg-gray-900 backdrop-blur-md border border-white/50 dark:border-gray-600/30 shadow-inner"
       style={{ aspectRatio: "3/4", maxHeight: "420px" }}
     >
-      {/* Белый фон */}
       <div className="absolute inset-0 bg-white dark:bg-gray-900" aria-hidden />
-
-      {/* Пятна: синий и розовый чуть интенсивнее, переливаются поверх белого */}
       <div
         className="absolute inset-0 animate-gradient-shift opacity-95 dark:opacity-85"
         style={{
@@ -77,7 +79,7 @@ export function HeroBanner() {
         }}
       />
 
-      {/* Иконки по краям с эффектом парения */}
+      {/* Парящие иконки */}
       <div className="absolute inset-0 pointer-events-none z-0" aria-hidden>
         {bannerIcons.map((app, i) => {
           const place = ICON_PLACES[i];
@@ -105,18 +107,14 @@ export function HeroBanner() {
                   transformOrigin: "center center",
                 }}
               >
-                <AppIcon
-                  src={app.icon}
-                  alt={app.name}
-                  className="w-full h-full object-cover"
-                />
+                <AppIcon src={app.icon} alt={app.name} className="w-full h-full object-cover" />
               </div>
             </div>
           );
         })}
       </div>
 
-      {/* Текст поверх всего: читаемость на светлом фоне */}
+      {/* Текст: печать по буквам + мигающий курсор */}
       <div className="absolute inset-0 flex items-center justify-center px-6 z-20">
         <p
           className="text-center text-gray-900 dark:text-white font-sans font-extrabold leading-tight drop-shadow-sm"
@@ -127,13 +125,15 @@ export function HeroBanner() {
             letterSpacing: "-0.02em",
           }}
         >
-          Погрузитесь в мир
-          <br />
-          мини-приложений
+          {BANNER_TEXT.slice(0, visibleLength).split("\n").map((line, i) => (
+            <span key={i}>{i > 0 && <br />}{line}</span>
+          ))}
+          {visibleLength < BANNER_TEXT.length && (
+            <span className="animate-blink-cursor" aria-hidden>|</span>
+          )}
         </p>
       </div>
 
-      {/* Кнопка «Вперед» в стиле жидкого стекла: скролл к Топ чарты */}
       <div className="absolute bottom-4 left-0 right-0 flex justify-center z-20 px-4">
         <button
           type="button"

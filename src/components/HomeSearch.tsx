@@ -103,6 +103,15 @@ export function HomeSearch() {
   const matches = useMemo(() => filterApps(apps, query), [apps, query]);
   const hasQuery = query.trim().length > 0;
 
+  const vpnCardIcons = useMemo(() => {
+    const find = (q: string) => apps.find((a) => a.name.toLowerCase().includes(q));
+    return [
+      { name: "Velvet VPN", app: find("velvet") },
+      { name: "Quattro VPN", app: find("quattro") },
+      { name: "Shadownet VPN", app: find("shadownet") },
+    ];
+  }, [apps]);
+
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
@@ -116,7 +125,7 @@ export function HomeSearch() {
   const openSuggestions = hasQuery && focused;
   const displaySuggestions = openSuggestions && matches.length > 0;
 
-  const TOP_CHARTS_VISIBLE = 5;
+  const TOP_CHARTS_VISIBLE = 3;
 
   // Жёстко заданный порядок топ‑чартов
   const TOP_CHARTS_ORDER = [
@@ -260,7 +269,7 @@ export function HomeSearch() {
           ))}
         </div>
         {topChartsApps.length > TOP_CHARTS_VISIBLE && (
-          <div className="px-5 mt-3">
+          <div className="px-5 mt-3 mb-6">
             <button
               type="button"
               onClick={() => {
@@ -278,7 +287,107 @@ export function HomeSearch() {
           </div>
         )}
 
-        <div className="w-full max-w-[calc(100%-2.5rem)] mt-4 mx-5 overflow-hidden rounded-2xl bg-white/40 dark:bg-gray-800/40 backdrop-blur-md border border-white/30 dark:border-gray-600/30 box-border">
+        <div
+          className="mt-8 mb-8 py-6"
+          style={{
+            background: "linear-gradient(to bottom, transparent 0%, rgb(31 41 55) 10%, rgb(31 41 55) 90%, transparent 100%)",
+          }}
+        >
+          <div className="flex flex-col gap-3 px-5">
+          {(
+            [
+              "Лучшие нейросети",
+              "Лучшие игры",
+              "Лучший пробив",
+              "Лучшие vpn",
+            ] as const
+          ).map((label, i) => {
+            const glowColors = [
+              "rgba(59, 130, 246, 0.45)",
+              "rgba(34, 197, 94, 0.45)",
+              "rgba(239, 68, 68, 0.5)",
+              "rgba(168, 85, 247, 0.5)",
+            ];
+            const glowColorsStrong = [
+              "rgba(0, 204, 255, 0.9)",
+              "rgba(0, 255, 136, 0.9)",
+              "rgba(255, 51, 102, 0.9)",
+              "rgba(191, 0, 255, 0.9)",
+            ];
+            const shadowRgb = [
+              [15, 23, 42],
+              [6, 28, 18],
+              [42, 15, 18],
+              [28, 15, 42],
+            ];
+            const [sr, sg, sb] = shadowRgb[i] ?? shadowRgb[0];
+            const c = glowColors[i] ?? glowColors[0];
+            const cStrong = glowColorsStrong[i] ?? glowColorsStrong[0];
+            const glow =
+              `radial-gradient(ellipse 80% 60% at 0% 100%, ${c} 0%, transparent 70%), ` +
+              `radial-gradient(ellipse 140% 120% at 100% 0%, ${c} 0%, transparent 70%), ` +
+              `radial-gradient(ellipse 140% 120% at 100% 100%, ${c} 0%, transparent 70%), ` +
+              `radial-gradient(ellipse 50% 100% at 100% 50%, ${cStrong} 0%, transparent 65%)`;
+            const shadow = `0 0 24px rgba(${sr},${sg},${sb},0.85), 0 0 60px rgba(${sr},${sg},${sb},0.65), 0 0 120px rgba(${sr},${sg},${sb},0.45), 0 0 180px rgba(${sr},${sg},${sb},0.25)`;
+            const isVpn = i === 3;
+            return (
+            <div
+              key={label}
+              className="relative w-full overflow-hidden rounded-2xl border border-gray-600/40 flex items-center bg-gray-900"
+              style={{
+                aspectRatio: "3/1",
+                contain: "layout",
+                backgroundImage: glow,
+                boxShadow: shadow,
+              }}
+            >
+              <span
+                className="relative z-10 pl-5 text-left text-white font-sans font-extrabold leading-tight drop-shadow-sm"
+                style={{
+                  fontSize: "clamp(1rem, 4.5vw, 1.35rem)",
+                  textShadow: "0 1px 2px rgba(0,0,0,0.08)",
+                  letterSpacing: "-0.02em",
+                }}
+              >
+                {label}
+              </span>
+              {isVpn && (
+                <div className="absolute right-6 top-1/2 -translate-y-1/2 z-10 pointer-events-none flex items-center gap-4" aria-hidden>
+                  <div className="animate-icon-float shrink-0" style={{ animationDelay: "0s" }}>
+                    <div
+                      className="w-14 h-14 rounded-[22%] border border-white/30 shadow-md bg-white/80 overflow-hidden opacity-90"
+                      style={{ transform: "rotate(-12deg)", transformOrigin: "center center" }}
+                    >
+                      <AppIcon src={vpnCardIcons[0]?.app?.icon ?? ""} alt="Velvet VPN" className="w-full h-full object-cover" />
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-2 items-end -translate-y-1" style={{ marginRight: 2 }}>
+                    <div className="animate-icon-float shrink-0" style={{ animationDelay: "0.15s" }}>
+                      <div
+                        className="w-10 h-10 rounded-[22%] border border-white/30 shadow-md bg-white/80 overflow-hidden opacity-90"
+                        style={{ transform: "rotate(8deg)", transformOrigin: "center center" }}
+                      >
+                        <AppIcon src={vpnCardIcons[1]?.app?.icon ?? ""} alt="Quattro VPN" className="w-full h-full object-cover" />
+                      </div>
+                    </div>
+                    <div className="animate-icon-float shrink-0" style={{ animationDelay: "0.3s" }}>
+                      <div
+                        className="w-[44px] h-[44px] rounded-[22%] border border-white/30 shadow-md bg-white/80 overflow-hidden opacity-90"
+                        style={{ transform: "rotate(-8deg)", transformOrigin: "center center" }}
+                      >
+                        <AppIcon src={vpnCardIcons[2]?.app?.icon ?? ""} alt="Shadownet VPN" className="w-full h-full object-cover" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+            );
+          })}
+          </div>
+        </div>
+
+        <div className="w-full max-w-[calc(100%-2.5rem)] mt-6 mx-5 overflow-hidden rounded-2xl bg-white/40 dark:bg-gray-800/40 backdrop-blur-md border border-white/30 dark:border-gray-600/30 box-border">
           <img
             src="/image99.png"
             alt="Mini Market"

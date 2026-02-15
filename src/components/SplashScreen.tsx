@@ -1,11 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import Image from "next/image";
 
 const FADE_IN_MS = 600;
 const HOLD_MS = 1400;
 const FADE_OUT_MS = 500;
+
+const SplashDoneContext = createContext(false);
+
+export function useSplashDone(): boolean {
+  return useContext(SplashDoneContext);
+}
 
 export function SplashScreen({ children }: { children: React.ReactNode }) {
   const [step, setStep] = useState<"idle" | "show" | "hold" | "hide" | "done">("idle");
@@ -27,6 +33,7 @@ export function SplashScreen({ children }: { children: React.ReactNode }) {
   const showSplash = step !== "done";
 
   return (
+    <SplashDoneContext.Provider value={step === "done"}>
     <>
       {showSplash && (
         <div
@@ -62,5 +69,6 @@ export function SplashScreen({ children }: { children: React.ReactNode }) {
         {children}
       </div>
     </>
+    </SplashDoneContext.Provider>
   );
 }
