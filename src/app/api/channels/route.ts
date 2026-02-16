@@ -86,6 +86,21 @@ function ensureColumns(db: InstanceType<typeof Database>): void {
   }
 }
 
+function ensureProbivCategory(db: InstanceType<typeof Database>): void {
+  try {
+    // Обновляем категорию для Funstat и Himera Search на "Пробив"
+    const stmt = db.prepare(`
+      UPDATE channels
+      SET category = 'Пробив'
+      WHERE LOWER(title) LIKE '%funstat%' OR LOWER(title) LIKE '%himera%'
+    `);
+    stmt.run();
+  } catch (error) {
+    // Если база readonly или другая ошибка - игнорируем
+    console.warn("Could not update Probiv category:", error);
+  }
+}
+
 /** Выбираем только существующие столбцы (для старых БД без short_description). */
 function getSelectCols(db: InstanceType<typeof Database>): string {
   const info = db.prepare("PRAGMA table_info(channels)").all() as { name: string }[];
@@ -172,6 +187,16 @@ export async function GET(request: Request) {
 
     const search = searchParams.get("search");
     const category = searchParams.get("category");
+    
+    // Если запрашивается категория "Пробив", убеждаемся что Funstat и Himera Search имеют правильную категорию
+    if (category === "Пробив") {
+      try {
+        ensureProbivCategory(db);
+      } catch {
+        // Игнорируем ошибки при обновлении
+      }
+    }
+    
     let rows: ChannelRow[];
 
     if (search && category) {
