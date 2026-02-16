@@ -171,14 +171,24 @@ export async function GET(request: Request) {
     }
 
     const search = searchParams.get("search");
+    const category = searchParams.get("category");
     let rows: ChannelRow[];
 
-    if (search) {
+    if (search && category) {
+      const stmt = db.prepare(`
+        SELECT ${selectCols} FROM channels WHERE (title LIKE ? OR description LIKE ?) AND category = ?
+      `);
+      const pattern = `%${search}%`;
+      rows = stmt.all(pattern, pattern, category) as ChannelRow[];
+    } else if (search) {
       const stmt = db.prepare(`
         SELECT ${selectCols} FROM channels WHERE title LIKE ? OR description LIKE ?
       `);
       const pattern = `%${search}%`;
       rows = stmt.all(pattern, pattern) as ChannelRow[];
+    } else if (category) {
+      const stmt = db.prepare(`SELECT ${selectCols} FROM channels WHERE category = ?`);
+      rows = stmt.all(category) as ChannelRow[];
     } else {
       rows = db.prepare(`SELECT ${selectCols} FROM channels`).all() as ChannelRow[];
     }

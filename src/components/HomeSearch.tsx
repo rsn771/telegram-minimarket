@@ -1,15 +1,23 @@
 "use client";
 
 import { useState, useMemo, useRef, useEffect } from "react";
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 import Link from "next/link";
 import { AppCard } from "@/components/AppCard";
 import { AppIcon } from "@/components/AppIcon";
 import { BottomNav } from "@/components/BottomNav";
+import { CategoryList } from "@/components/CategoryList";
 import { HeroBanner } from "@/components/HeroBanner";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useApps, type AppItem } from "@/context/AppsContext";
 import { hapticFeedback } from "@/utils/telegram";
+
+const CATEGORY_MODAL_TITLES: Record<string, string> = {
+  neuro: "Лучшие нейросети",
+  games: "Лучшие игры",
+  probiv: "Лучший пробив",
+  vpn: "Лучшие VPN",
+};
 
 function filterApps(apps: AppItem[], query: string): AppItem[] {
   if (!query.trim()) return apps;
@@ -59,6 +67,7 @@ export function HomeSearch() {
   const [showAllTopCharts, setShowAllTopCharts] = useState(false);
   const [showAllNeural, setShowAllNeural] = useState(false);
   const [showAllGames, setShowAllGames] = useState(false);
+  const [categoryModalSlug, setCategoryModalSlug] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const scrollRestoredRef = useRef(false);
@@ -109,6 +118,15 @@ export function HomeSearch() {
       { name: "Velvet VPN", app: find("velvet") },
       { name: "Quattro VPN", app: find("quattro") },
       { name: "Shadownet VPN", app: find("shadownet") },
+    ];
+  }, [apps]);
+
+  const gamesCardIcons = useMemo(() => {
+    const find = (q: string) => apps.find((a) => a.name.toLowerCase().includes(q));
+    return [
+      { name: "Void", app: find("void") },
+      { name: "Boinker", app: find("boinker") },
+      { name: "Allgames", app: find("allgames") },
     ];
   }, [apps]);
 
@@ -296,12 +314,14 @@ export function HomeSearch() {
           <div className="flex flex-col gap-3 px-5">
           {(
             [
-              "Лучшие нейросети",
-              "Лучшие игры",
-              "Лучший пробив",
-              "Лучшие vpn",
+              { label: "Лучшие нейросети", slug: "neuro" },
+              { label: "Лучшие игры", slug: "games" },
+              { label: "Лучший пробив", slug: "probiv" },
+              { label: "Лучшие vpn", slug: "vpn" },
             ] as const
-          ).map((label, i) => {
+          ).map((item, i) => {
+            const label = item.label;
+            const slug = item.slug;
             const glowColors = [
               "rgba(59, 130, 246, 0.45)",
               "rgba(34, 197, 94, 0.45)",
@@ -330,10 +350,17 @@ export function HomeSearch() {
               `radial-gradient(ellipse 50% 100% at 100% 50%, ${cStrong} 0%, transparent 65%)`;
             const shadow = `0 0 24px rgba(${sr},${sg},${sb},0.85), 0 0 60px rgba(${sr},${sg},${sb},0.65), 0 0 120px rgba(${sr},${sg},${sb},0.45), 0 0 180px rgba(${sr},${sg},${sb},0.25)`;
             const isVpn = i === 3;
+            const isGames = i === 1;
+            const cardIcons = isVpn ? vpnCardIcons : isGames ? gamesCardIcons : null;
             return (
-            <div
+            <button
               key={label}
-              className="relative w-full overflow-hidden rounded-2xl border border-gray-600/40 flex items-center bg-gray-900"
+              type="button"
+              onClick={() => {
+                hapticFeedback("light");
+                setCategoryModalSlug(slug);
+              }}
+              className="block relative w-full overflow-hidden rounded-2xl border border-gray-600/40 flex items-center bg-gray-900 text-left"
               style={{
                 aspectRatio: "3/1",
                 contain: "layout",
@@ -351,14 +378,14 @@ export function HomeSearch() {
               >
                 {label}
               </span>
-              {isVpn && (
-                <div className="absolute right-6 top-1/2 -translate-y-1/2 z-10 pointer-events-none flex items-center gap-4" aria-hidden>
+              {cardIcons && (
+                <div className="absolute right-6 top-1/2 z-10 pointer-events-none flex items-center gap-4" style={{ transform: "translateY(calc(-50% + 6px))" }} aria-hidden>
                   <div className="animate-icon-float shrink-0" style={{ animationDelay: "0s" }}>
                     <div
                       className="w-14 h-14 rounded-[22%] border border-white/30 shadow-md bg-white/80 overflow-hidden opacity-90"
                       style={{ transform: "rotate(-12deg)", transformOrigin: "center center" }}
                     >
-                      <AppIcon src={vpnCardIcons[0]?.app?.icon ?? ""} alt="Velvet VPN" className="w-full h-full object-cover" />
+                      <AppIcon src={cardIcons[0]?.app?.icon ?? ""} alt={cardIcons[0]?.name ?? ""} className="w-full h-full object-cover" />
                     </div>
                   </div>
                   <div className="flex flex-col gap-2 items-end -translate-y-1" style={{ marginRight: 2 }}>
@@ -367,7 +394,7 @@ export function HomeSearch() {
                         className="w-10 h-10 rounded-[22%] border border-white/30 shadow-md bg-white/80 overflow-hidden opacity-90"
                         style={{ transform: "rotate(8deg)", transformOrigin: "center center" }}
                       >
-                        <AppIcon src={vpnCardIcons[1]?.app?.icon ?? ""} alt="Quattro VPN" className="w-full h-full object-cover" />
+                        <AppIcon src={cardIcons[1]?.app?.icon ?? ""} alt={cardIcons[1]?.name ?? ""} className="w-full h-full object-cover" />
                       </div>
                     </div>
                     <div className="animate-icon-float shrink-0" style={{ animationDelay: "0.3s" }}>
@@ -375,13 +402,13 @@ export function HomeSearch() {
                         className="w-[44px] h-[44px] rounded-[22%] border border-white/30 shadow-md bg-white/80 overflow-hidden opacity-90"
                         style={{ transform: "rotate(-8deg)", transformOrigin: "center center" }}
                       >
-                        <AppIcon src={vpnCardIcons[2]?.app?.icon ?? ""} alt="Shadownet VPN" className="w-full h-full object-cover" />
+                        <AppIcon src={cardIcons[2]?.app?.icon ?? ""} alt={cardIcons[2]?.name ?? ""} className="w-full h-full object-cover" />
                       </div>
                     </div>
                   </div>
                 </div>
               )}
-            </div>
+            </button>
             );
           })}
           </div>
@@ -463,6 +490,50 @@ export function HomeSearch() {
       <p className="mt-10 mb-6 mx-auto px-4 max-w-[36rem] text-center text-[13px] leading-relaxed text-gray-600 dark:text-gray-400">
         Наш маркет помогает вам находить лучшие сервисы в Telegram. Мы заботливо собираем их в одном месте, но важно помнить: каждое приложение создано независимыми разработчиками. Мы не присваиваем себе авторство сторонних проектов и не можем гарантировать их бесперебойную работу. Мы не занимаемся пропагандой каких-либо идей, товаров или взглядов — наш сервис носит исключительно информационный характер. Пользуйтесь с удовольствием, но будьте бдительны!
       </p>
+
+      {categoryModalSlug && (
+        <div
+          className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-label={CATEGORY_MODAL_TITLES[categoryModalSlug] ?? "Категория"}
+          onClick={() => {
+            hapticFeedback("light");
+            setCategoryModalSlug(null);
+          }}
+        >
+          <div
+            className="w-full max-w-lg max-h-[85vh] flex flex-col rounded-2xl bg-white dark:bg-gray-800 shadow-xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-gray-200 dark:border-gray-700 shrink-0">
+              <h3 className="text-[20px] font-bold text-black dark:text-white">
+                {CATEGORY_MODAL_TITLES[categoryModalSlug] ?? categoryModalSlug}
+              </h3>
+              <button
+                type="button"
+                onClick={() => {
+                  hapticFeedback("light");
+                  setCategoryModalSlug(null);
+                }}
+                className="p-2 -m-2 rounded-xl text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 active:opacity-70 transition-opacity"
+                aria-label="Закрыть"
+              >
+                <X size={24} strokeWidth={2} />
+              </button>
+            </div>
+            <div className="overflow-y-auto flex-1 min-h-0 px-2">
+              {categoryModalSlug === "probiv" ? (
+                <CategoryList slug={categoryModalSlug} />
+              ) : (
+                <div className="py-6">
+                  <p className="text-gray-500 dark:text-gray-400 text-sm text-center">Список приложений пока пуст.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       <BottomNav active="main" />
       </div>
