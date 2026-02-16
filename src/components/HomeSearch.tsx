@@ -416,8 +416,8 @@ export function HomeSearch() {
 
         <div className="w-full max-w-[calc(100%-2.5rem)] mt-6 mx-5 overflow-hidden rounded-2xl bg-white/40 dark:bg-gray-800/40 backdrop-blur-md border border-white/30 dark:border-gray-600/30 box-border">
           <img
-            src="/image99.png"
-            alt="Mini Market"
+            src="/nft-banner.png"
+            alt="NFT подарки"
             className="max-w-full w-full h-auto object-contain object-left block"
           />
         </div>
@@ -452,8 +452,8 @@ export function HomeSearch() {
 
         <div className="w-full max-w-[calc(100%-2.5rem)] mt-4 mx-5 overflow-hidden rounded-2xl bg-white/40 dark:bg-gray-800/40 backdrop-blur-md border border-white/30 dark:border-gray-600/30 box-border">
           <img
-            src="/image99.png"
-            alt="Mini Market"
+            src="/probiv-banner.png"
+            alt="Пробив"
             className="max-w-full w-full h-auto object-contain object-left block"
           />
         </div>
