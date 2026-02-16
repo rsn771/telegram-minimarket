@@ -86,19 +86,13 @@ function ensureColumns(db: InstanceType<typeof Database>): void {
   }
 }
 
-function ensureProbivCategory(db: InstanceType<typeof Database>): void {
-  try {
-    // Обновляем категорию для Funstat и Himera Search на "Пробив"
-    const stmt = db.prepare(`
-      UPDATE channels
-      SET category = 'Пробив'
-      WHERE LOWER(title) LIKE '%funstat%' OR LOWER(title) LIKE '%himera%'
-    `);
-    stmt.run();
-  } catch (error) {
-    // Если база readonly или другая ошибка - игнорируем
-    console.warn("Could not update Probiv category:", error);
-  }
+// Приложения для категории "Пробив" определяются по названию, а не по категории в БД
+function getProbivApps(db: InstanceType<typeof Database>, selectCols: string): ChannelRow[] {
+  const stmt = db.prepare(`
+    SELECT ${selectCols} FROM channels 
+    WHERE LOWER(title) LIKE '%funstat%' OR LOWER(title) LIKE '%himera%'
+  `);
+  return stmt.all() as ChannelRow[];
 }
 
 /** Выбираем только существующие столбцы (для старых БД без short_description). */
@@ -188,23 +182,25 @@ export async function GET(request: Request) {
     const search = searchParams.get("search");
     const category = searchParams.get("category");
     
-    // Если запрашивается категория "Пробив", убеждаемся что Funstat и Himera Search имеют правильную категорию
-    if (category === "Пробив") {
-      try {
-        ensureProbivCategory(db);
-      } catch {
-        // Игнорируем ошибки при обновлении
-      }
-    }
-    
     let rows: ChannelRow[];
 
     if (search && category) {
-      const stmt = db.prepare(`
-        SELECT ${selectCols} FROM channels WHERE (title LIKE ? OR description LIKE ?) AND category = ?
-      `);
-      const pattern = `%${search}%`;
-      rows = stmt.all(pattern, pattern, category) as ChannelRow[];
+      if (category === "Пробив") {
+        // Для категории "Пробив" ищем по названию (funstat, himera)
+        const pattern = `%${search}%`;
+        const probivApps = getProbivApps(db, selectCols);
+        rows = probivApps.filter(
+          (row) =>
+            row.title.toLowerCase().includes(pattern.toLowerCase()) ||
+            (row.description?.toLowerCase() || "").includes(pattern.toLowerCase())
+        );
+      } else {
+        const stmt = db.prepare(`
+          SELECT ${selectCols} FROM channels WHERE (title LIKE ? OR description LIKE ?) AND category = ?
+        `);
+        const pattern = `%${search}%`;
+        rows = stmt.all(pattern, pattern, category) as ChannelRow[];
+      }
     } else if (search) {
       const stmt = db.prepare(`
         SELECT ${selectCols} FROM channels WHERE title LIKE ? OR description LIKE ?
@@ -212,13 +208,25 @@ export async function GET(request: Request) {
       const pattern = `%${search}%`;
       rows = stmt.all(pattern, pattern) as ChannelRow[];
     } else if (category) {
-      const stmt = db.prepare(`SELECT ${selectCols} FROM channels WHERE category = ?`);
-      rows = stmt.all(category) as ChannelRow[];
+      if (category === "Пробив") {
+        // Для категории "Пробив" возвращаем приложения по названию, независимо от категории в БД
+        rows = getProbivApps(db, selectCols);
+      } else {
+        const stmt = db.prepare(`SELECT ${selectCols} FROM channels WHERE category = ?`);
+        rows = stmt.all(category) as ChannelRow[];
+      }
     } else {
       rows = db.prepare(`SELECT ${selectCols} FROM channels`).all() as ChannelRow[];
     }
 
-    const channels = rows.map((row) => toChannel(row));
+    const channels = rows.map((row) => {
+      const channel = toChannel(row);
+      // Если запрашивается категория "Пробив", переопределяем категорию для этих приложений
+      if (category === "Пробив" && (row.title.toLowerCase().includes("funstat") || row.title.toLowerCase().includes("himera"))) {
+        channel.category = "Пробив";
+      }
+      return channel;
+    });
     db.close();
     return NextResponse.json(channels);
   } catch (err) {
