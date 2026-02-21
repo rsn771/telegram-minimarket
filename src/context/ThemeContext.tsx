@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useCallback, useEffect } from "react";
 
-const STORAGE_KEY = "telegram-minimarket-theme";
+const STORAGE_KEY = "telegram-minimarket-theme-v2";
 
 type Theme = "light" | "dark";
 
@@ -15,16 +15,16 @@ type ThemeContextType = {
 const ThemeContext = createContext<ThemeContextType | null>(null);
 
 function loadTheme(): Theme {
-  if (typeof window === "undefined") return "light";
+  if (typeof window === "undefined") return "dark";
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored === "dark" || stored === "light") return stored;
   } catch {}
-  return "light";
+  return "dark";
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("light");
+  const [theme, setThemeState] = useState<Theme>("dark");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {

@@ -1,7 +1,6 @@
 "use client";
 
 import { useApps, type AppItem } from "@/context/AppsContext";
-import { useSplashDone } from "@/components/SplashScreen";
 import { useMemo, useState, useEffect } from "react";
 import { hapticFeedback } from "@/utils/telegram";
 import { AppIcon } from "@/components/AppIcon";
@@ -50,15 +49,14 @@ function getIconPosition(app: AppItem, place: { top: string; left: string }) {
 
 export function HeroBanner() {
   const { apps } = useApps();
-  const splashDone = useSplashDone();
   const bannerIcons = useBannerIcons(apps, ICON_PLACES.length);
   const [visibleLength, setVisibleLength] = useState(0);
 
   useEffect(() => {
-    if (!splashDone || visibleLength >= BANNER_TEXT.length) return;
+    if (visibleLength >= BANNER_TEXT.length) return;
     const id = setTimeout(() => setVisibleLength((n) => Math.min(n + 1, BANNER_TEXT.length)), TYPEWRITER_DELAY_MS);
     return () => clearTimeout(id);
-  }, [splashDone, visibleLength]);
+  }, [visibleLength]);
 
   return (
     <div

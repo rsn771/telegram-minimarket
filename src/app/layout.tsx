@@ -10,7 +10,6 @@ const nunito = Nunito({
   display: "swap",
 });
 import { TelegramWebApp } from "@/components/TelegramWebApp";
-import { SplashScreen } from "@/components/SplashScreen";
 import { AppsProvider } from "@/context/AppsContext";
 import { MyAppsProvider } from "@/context/MyAppsContext";
 import { ThemeProvider } from "@/context/ThemeContext";
@@ -50,7 +49,7 @@ export default function RootLayout({
         <ThemeProvider>
           <AppsProvider>
             <MyAppsProvider>
-              <SplashScreen>{children}</SplashScreen>
+              {children}
             </MyAppsProvider>
           </AppsProvider>
         </ThemeProvider>

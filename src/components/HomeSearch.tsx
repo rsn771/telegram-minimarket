@@ -25,11 +25,12 @@ function filterApps(apps: AppItem[], query: string): AppItem[] {
   return apps.filter(
     (app) =>
       app.name.toLowerCase().includes(q) ||
+      app.id.toLowerCase().includes(q) ||
       app.category.toLowerCase().includes(q)
   );
 }
 
-const STORAGE_KEY = "home-expand";
+const STORAGE_KEY = "home-expand-v2";
 const SCROLL_KEY = "home-scroll";
 
 function loadExpanded(): { topCharts: boolean; neural: boolean; games: boolean } {
@@ -143,16 +144,30 @@ export function HomeSearch() {
   const openSuggestions = hasQuery && focused;
   const displaySuggestions = openSuggestions && matches.length > 0;
 
-  const TOP_CHARTS_VISIBLE = 3;
+  const TOP_CHARTS_VISIBLE = 4;
 
   // Жёстко заданный порядок топ‑чартов
   const TOP_CHARTS_ORDER = [
+    "not spy bot",
+    "rsn bot | чеки и переводы",
     "notcoin",
     "void",
     "major",
-    "portals market",
     "gigachat",
     "random beast",
+  ];
+
+  // Приложения под вторым баннером (NFT подарки)
+  const NFT_GIFTS_ORDER = [
+    "portals market",
+    "tonnel relayer bot",
+    "virus bot",
+    "rolls",
+    "magic market",
+    "easy gift",
+    "battles",
+    "autogifts",
+    "empty",
   ];
 
   // Собираем список приложений для топ‑чартов по имени (без учёта регистра)
@@ -170,14 +185,27 @@ export function HomeSearch() {
   }
 
   const categoryNorm = (s: string) => (s || "").trim().toLowerCase();
-  const neuralApps = apps.filter((app) => categoryNorm(app.category) === "нейросети");
+  
+  // Собираем список приложений для раздела NFT подарки по имени
+  const nftGiftsApps: AppItem[] = [];
+  const nftGiftsIds = new Set<string>();
+  for (const name of NFT_GIFTS_ORDER) {
+    const found = apps.find(
+      (app) => app.name.trim().toLowerCase() === name.toLowerCase()
+    );
+    if (found && !nftGiftsIds.has(String(found.id))) {
+      nftGiftsApps.push(found);
+      nftGiftsIds.add(String(found.id));
+    }
+  }
+  
   const gamesApps = apps.filter((app) => categoryNorm(app.category) === "игры");
 
   const visibleTopCharts = showAllTopCharts
     ? topChartsApps
     : topChartsApps.slice(0, TOP_CHARTS_VISIBLE);
 
-  const visibleNeuralApps = showAllNeural ? neuralApps : neuralApps.slice(0, TOP_CHARTS_VISIBLE);
+  const visibleNftGiftsApps = showAllNeural ? nftGiftsApps : nftGiftsApps.slice(0, TOP_CHARTS_VISIBLE);
   const visibleGamesApps = showAllGames ? gamesApps : gamesApps.slice(0, TOP_CHARTS_VISIBLE);
 
   const persistExpand = (updates: { topCharts?: boolean; neural?: boolean; games?: boolean }) => {
@@ -422,14 +450,14 @@ export function HomeSearch() {
           />
         </div>
 
-        {neuralApps.length > 0 && (
+        {nftGiftsApps.length > 0 && (
           <>
             <div className="flex flex-col mt-4">
-              {visibleNeuralApps.map((app) => (
+              {visibleNftGiftsApps.map((app) => (
                 <AppCard key={app.id} app={app} />
               ))}
             </div>
-            {neuralApps.length > TOP_CHARTS_VISIBLE && (
+            {nftGiftsApps.length > TOP_CHARTS_VISIBLE && (
               <div className="px-5 mt-3">
                 <button
                   type="button"
