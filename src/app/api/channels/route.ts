@@ -90,7 +90,7 @@ function ensureColumns(db: InstanceType<typeof Database>): void {
 function getProbivApps(db: InstanceType<typeof Database>, selectCols: string): ChannelRow[] {
   const stmt = db.prepare(`
     SELECT ${selectCols} FROM channels 
-    WHERE LOWER(title) LIKE '%funstat%' OR LOWER(title) LIKE '%himera%'
+    WHERE LOWER(title) LIKE '%funstat%' OR LOWER(title) LIKE '%himera%' OR LOWER(title) LIKE '%sherlok%'
   `);
   return stmt.all() as ChannelRow[];
 }
@@ -222,7 +222,7 @@ export async function GET(request: Request) {
     const channels = rows.map((row) => {
       const channel = toChannel(row);
       // Если запрашивается категория "Пробив", переопределяем категорию для этих приложений
-      if (category === "Пробив" && (row.title.toLowerCase().includes("funstat") || row.title.toLowerCase().includes("himera"))) {
+      if (category === "Пробив" && (row.title.toLowerCase().includes("funstat") || row.title.toLowerCase().includes("himera") || row.title.toLowerCase().includes("sherlok"))) {
         channel.category = "Пробив";
       }
       return channel;

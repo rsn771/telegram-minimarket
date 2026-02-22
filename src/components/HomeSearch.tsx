@@ -161,7 +161,7 @@ export function HomeSearch() {
   const NFT_GIFTS_ORDER = [
     "portals market",
     "tonnel relayer bot",
-    "virus bot",
+    "virus game bot",
     "rolls",
     "magic market",
     "easy gift",
@@ -169,6 +169,9 @@ export function HomeSearch() {
     "autogifts",
     "empty",
   ];
+
+  // Приложения под третьим баннером (Пробив) - те же что во вкладке "Лучший пробив"
+  const PROBIV_KEYWORDS = ["funstat", "himera", "sherlok"];
 
   // Собираем список приложений для топ‑чартов по имени (без учёта регистра)
   const topChartsApps: AppItem[] = [];
@@ -199,14 +202,17 @@ export function HomeSearch() {
     }
   }
   
-  const gamesApps = apps.filter((app) => categoryNorm(app.category) === "игры");
+  // Приложения для раздела Пробив (по ключевым словам в названии)
+  const probivApps = apps.filter((app) =>
+    PROBIV_KEYWORDS.some((kw) => app.name.toLowerCase().includes(kw))
+  );
 
   const visibleTopCharts = showAllTopCharts
     ? topChartsApps
     : topChartsApps.slice(0, TOP_CHARTS_VISIBLE);
 
   const visibleNftGiftsApps = showAllNeural ? nftGiftsApps : nftGiftsApps.slice(0, TOP_CHARTS_VISIBLE);
-  const visibleGamesApps = showAllGames ? gamesApps : gamesApps.slice(0, TOP_CHARTS_VISIBLE);
+  const visibleProbivApps = showAllGames ? probivApps : probivApps.slice(0, TOP_CHARTS_VISIBLE);
 
   const persistExpand = (updates: { topCharts?: boolean; neural?: boolean; games?: boolean }) => {
     const next = {
@@ -486,14 +492,14 @@ export function HomeSearch() {
           />
         </div>
 
-        {gamesApps.length > 0 && (
+        {probivApps.length > 0 && (
           <>
             <div className="flex flex-col mt-4">
-              {visibleGamesApps.map((app) => (
+              {visibleProbivApps.map((app) => (
                 <AppCard key={app.id} app={app} />
               ))}
             </div>
-            {gamesApps.length > TOP_CHARTS_VISIBLE && (
+            {probivApps.length > TOP_CHARTS_VISIBLE && (
               <div className="px-5 mt-3">
                 <button
                   type="button"
