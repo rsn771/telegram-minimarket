@@ -131,6 +131,25 @@ export function HomeSearch() {
     ];
   }, [apps]);
 
+  const probivCardIcons = useMemo(() => {
+    const find = (q: string) => apps.find((a) => a.name.toLowerCase().includes(q));
+    return [
+      { name: "Sherlok", app: find("sherlok") },
+      { name: "Funstat", app: find("funstat") },
+      { name: "Himera Search", app: find("himera") },
+    ];
+  }, [apps]);
+
+  const neuroCardIcons = useMemo(() => {
+    const find = (q: string) => apps.find((a) => a.name.toLowerCase().includes(q));
+    return [
+      { name: "ChatGPT 5 Neiroseti", app: find("chatgpt 5 neiroseti") },
+      { name: "ChatGPT 5 | Gemini 3", app: find("gemini 3") },
+      { name: "GigaChat", app: find("gigachat") },
+      { name: "GPT-4 Unlimited", app: find("gpt-4 unlimited") },
+    ];
+  }, [apps]);
+
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
@@ -383,9 +402,11 @@ export function HomeSearch() {
               `radial-gradient(ellipse 140% 120% at 100% 100%, ${c} 0%, transparent 70%), ` +
               `radial-gradient(ellipse 50% 100% at 100% 50%, ${cStrong} 0%, transparent 65%)`;
             const shadow = `0 0 24px rgba(${sr},${sg},${sb},0.85), 0 0 60px rgba(${sr},${sg},${sb},0.65), 0 0 120px rgba(${sr},${sg},${sb},0.45), 0 0 180px rgba(${sr},${sg},${sb},0.25)`;
-            const isVpn = i === 3;
+            const isNeuro = i === 0;
             const isGames = i === 1;
-            const cardIcons = isVpn ? vpnCardIcons : isGames ? gamesCardIcons : null;
+            const isProbiv = i === 2;
+            const isVpn = i === 3;
+            const cardIcons = isVpn ? vpnCardIcons : isGames ? gamesCardIcons : isProbiv ? probivCardIcons : isNeuro ? neuroCardIcons : null;
             return (
             <button
               key={label}
@@ -521,6 +542,24 @@ export function HomeSearch() {
         )}
       </section>
 
+      <div className="w-full max-w-[calc(100%-2.5rem)] mt-8 mx-5 overflow-hidden rounded-2xl bg-white/40 dark:bg-gray-800/40 backdrop-blur-md border border-white/30 dark:border-gray-600/30 box-border">
+        <img
+          src="/vpn-banner.png"
+          alt="VPN"
+          className="max-w-full w-full h-auto object-contain object-left block"
+        />
+      </div>
+
+      {vpnCardIcons.length > 0 && (
+        <section className="mt-4">
+          <div className="flex flex-col">
+            {vpnCardIcons.map((item) => item.app && (
+              <AppCard key={item.app.id} app={item.app} />
+            ))}
+          </div>
+        </section>
+      )}
+
       <p className="mt-10 mb-6 mx-auto px-4 max-w-[36rem] text-center text-[13px] leading-relaxed text-gray-600 dark:text-gray-400">
         Наш маркет помогает вам находить лучшие сервисы в Telegram. Мы заботливо собираем их в одном месте, но важно помнить: каждое приложение создано независимыми разработчиками. Мы не присваиваем себе авторство сторонних проектов и не можем гарантировать их бесперебойную работу. Мы не занимаемся пропагандой каких-либо идей, товаров или взглядов — наш сервис носит исключительно информационный характер. Пользуйтесь с удовольствием, но будьте бдительны!
       </p>
@@ -557,13 +596,32 @@ export function HomeSearch() {
               </button>
             </div>
             <div className="overflow-y-auto flex-1 min-h-0 px-2">
-              {categoryModalSlug === "probiv" ? (
-                <CategoryList slug={categoryModalSlug} />
-              ) : (
-                <div className="py-6">
-                  <p className="text-gray-500 dark:text-gray-400 text-sm text-center">Список приложений пока пуст.</p>
-                </div>
-              )}
+              {(() => {
+                const modalApps =
+                  categoryModalSlug === "vpn"
+                    ? vpnCardIcons.map((c) => c.app).filter(Boolean) as AppItem[]
+                    : categoryModalSlug === "games"
+                    ? gamesCardIcons.map((c) => c.app).filter(Boolean) as AppItem[]
+                    : categoryModalSlug === "probiv"
+                    ? probivCardIcons.map((c) => c.app).filter(Boolean) as AppItem[]
+                    : categoryModalSlug === "neuro"
+                    ? neuroCardIcons.map((c) => c.app).filter(Boolean) as AppItem[]
+                    : [];
+                if (modalApps.length === 0) {
+                  return (
+                    <div className="py-6">
+                      <p className="text-gray-500 dark:text-gray-400 text-sm text-center">Список приложений пока пуст.</p>
+                    </div>
+                  );
+                }
+                return (
+                  <div className="flex flex-col gap-2 pb-4">
+                    {modalApps.map((app) => (
+                      <AppCard key={app.id} app={app} />
+                    ))}
+                  </div>
+                );
+              })()}
             </div>
           </div>
         </div>

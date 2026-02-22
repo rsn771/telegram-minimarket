@@ -30,7 +30,8 @@ export default function AppDetail() {
   const [submittingReview, setSubmittingReview] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [showAllReviews, setShowAllReviews] = useState(false);
-  const app = typeof id === "string" ? getAppById(id) : undefined;
+  const decodedId = typeof id === "string" ? decodeURIComponent(id) : "";
+  const app = decodedId ? getAppById(decodedId) : undefined;
 
   // ВСЕ хуки должны быть вызваны ДО любых условных возвратов (правила React Hooks)
   // Используем встроенную кнопку Telegram BackButton вместо собственной панели

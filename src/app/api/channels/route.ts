@@ -10,10 +10,13 @@ const DB_DIR = path.join(process.cwd(), "database");
 const DB_PATH = path.join(DB_DIR, "telegram_channels.db");
 
 // На Vercel папка logo&screens не деплоится (.vercelignore). Картинки — с GitHub raw (можно переопределить через ASSETS_BASE_URL).
-const ASSETS_BASE =
-  process.env.ASSETS_BASE_URL ??
-  process.env.BLOB_STORE_URL ??
-  "https://raw.githubusercontent.com/rsn771/telegram-minimarket/main/database/logo%26screens/";
+// В режиме разработки используем локальный API для статических файлов.
+const IS_DEV = process.env.NODE_ENV === "development";
+const ASSETS_BASE = IS_DEV
+  ? ""
+  : (process.env.ASSETS_BASE_URL ??
+     process.env.BLOB_STORE_URL ??
+     "https://raw.githubusercontent.com/rsn771/telegram-minimarket/main/database/logo%26screens/");
 
 function getIconUrl(icon: string | null): string {
   if (!icon) return "https://api.dicebear.com/7.x/shapes/svg?seed=default";
