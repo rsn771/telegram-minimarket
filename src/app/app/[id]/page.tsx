@@ -162,7 +162,7 @@ export default function AppDetail() {
   };
 
   const handleSubmitReview = async () => {
-    if (!app?.id || selectedRating === 0 || !reviewText.trim()) return;
+    if (!app?.id || selectedRating === 0) return;
     
     hapticFeedback("medium");
     setSubmittingReview(true);
@@ -418,7 +418,7 @@ export default function AppDetail() {
               </div>
               <div>
                 <label htmlFor="review-text" className="block text-[15px] font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Ваш отзыв
+                  Ваш отзыв <span className="font-normal text-gray-400 dark:text-gray-500">(необязательно)</span>
                 </label>
                 <textarea
                   id="review-text"

@@ -256,12 +256,7 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!text || typeof text !== "string" || text.trim().length === 0) {
-      return NextResponse.json(
-        { error: "Текст отзыва не может быть пустым" },
-        { status: 400 },
-      );
-    }
+    const reviewText = typeof text === "string" ? text.trim() : "";
 
     // Проверяем, что мини-приложение существует в локальной БД каналов
     if (fs.existsSync(CHANNELS_DB_PATH)) {
@@ -282,9 +277,9 @@ export async function POST(request: Request) {
     let newReview: Review;
 
     if (USE_POSTGRES) {
-      newReview = await saveReviewToPostgres({ idminiapp, rating, text });
+      newReview = await saveReviewToPostgres({ idminiapp, rating, text: reviewText });
     } else {
-      newReview = await saveReviewToSQLite({ idminiapp, rating, text });
+      newReview = await saveReviewToSQLite({ idminiapp, rating, text: reviewText });
     }
 
     updateAppRating(idminiapp);
