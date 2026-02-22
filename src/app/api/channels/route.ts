@@ -181,7 +181,7 @@ function toChannel(row: ChannelRow, ratingsMap?: Map<string, number>): {
     icon: getIconUrl(row.icon),
     url: row.url ?? "",
     description: row.description ?? "",
-    rating: reviewRating ?? Number(row.rating) || 0,
+    rating: reviewRating ?? (Number(row.rating) || 0),
     isVerified: Boolean(row.is_verified),
     screenshots: parseScreenshots(row.screenshots_path ?? null),
     shortDescription: row.short_description ?? "",
