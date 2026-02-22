@@ -2,12 +2,18 @@ import { NextResponse } from "next/server";
 import path from "path";
 import fs from "fs";
 import Database from "better-sqlite3";
+import { neon } from "@neondatabase/serverless";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const DB_DIR = path.join(process.cwd(), "database");
 const DB_PATH = path.join(DB_DIR, "telegram_channels.db");
+const REVIEWS_DB_PATH = path.join(DB_DIR, "reviews.db");
+
+const IS_VERCEL = !!process.env.VERCEL;
+const DATABASE_URL = process.env.DATABASE_URL;
+const USE_POSTGRES = !!DATABASE_URL && IS_VERCEL;
 
 // На Vercel папка logo&screens не деплоится (.vercelignore). Картинки — с GitHub raw (можно переопределить через ASSETS_BASE_URL).
 // В режиме разработки используем локальный API для статических файлов.
@@ -89,6 +95,44 @@ function ensureColumns(db: InstanceType<typeof Database>): void {
   }
 }
 
+// Получение средних рейтингов из отзывов
+async function getAverageRatings(): Promise<Map<string, number>> {
+  const ratingsMap = new Map<string, number>();
+  
+  try {
+    if (USE_POSTGRES && DATABASE_URL) {
+      // Получаем рейтинги из Postgres (Vercel)
+      const sql = neon(DATABASE_URL);
+      const rows = await sql`
+        SELECT idminiapp, AVG(rating)::float as avg_rating
+        FROM reviews
+        GROUP BY idminiapp
+      ` as { idminiapp: string; avg_rating: number }[];
+      
+      for (const row of rows) {
+        ratingsMap.set(row.idminiapp, Math.round(row.avg_rating * 10) / 10);
+      }
+    } else if (fs.existsSync(REVIEWS_DB_PATH)) {
+      // Получаем рейтинги из локальной SQLite
+      const reviewsDb = new Database(REVIEWS_DB_PATH, { readonly: true });
+      const rows = reviewsDb.prepare(`
+        SELECT idminiapp, AVG(rating) as avg_rating
+        FROM reviews
+        GROUP BY idminiapp
+      `).all() as { idminiapp: string; avg_rating: number }[];
+      reviewsDb.close();
+      
+      for (const row of rows) {
+        ratingsMap.set(row.idminiapp, Math.round(row.avg_rating * 10) / 10);
+      }
+    }
+  } catch (err) {
+    console.error("Error fetching average ratings:", err);
+  }
+  
+  return ratingsMap;
+}
+
 // Приложения для категории "Пробив" определяются по названию, а не по категории в БД
 function getProbivApps(db: InstanceType<typeof Database>, selectCols: string): ChannelRow[] {
   const stmt = db.prepare(`
@@ -117,7 +161,7 @@ function getSelectCols(db: InstanceType<typeof Database>): string {
   return wanted.filter((col) => existing.has(col)).join(", ");
 }
 
-function toChannel(row: ChannelRow): {
+function toChannel(row: ChannelRow, ratingsMap?: Map<string, number>): {
   id: string;
   name: string;
   category: string;
@@ -129,6 +173,7 @@ function toChannel(row: ChannelRow): {
   screenshots: string[];
   shortDescription: string;
 } {
+  const reviewRating = ratingsMap?.get(row.idminiapp);
   return {
     id: String(row.idminiapp),
     name: row.title,
@@ -136,7 +181,7 @@ function toChannel(row: ChannelRow): {
     icon: getIconUrl(row.icon),
     url: row.url ?? "",
     description: row.description ?? "",
-    rating: Number(row.rating) || 0,
+    rating: reviewRating ?? Number(row.rating) || 0,
     isVerified: Boolean(row.is_verified),
     screenshots: parseScreenshots(row.screenshots_path ?? null),
     shortDescription: row.short_description ?? "",
@@ -170,6 +215,9 @@ export async function GET(request: Request) {
     const selectCols = getSelectCols(db);
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
+    
+    // Получаем средние рейтинги из отзывов
+    const ratingsMap = await getAverageRatings();
 
     if (id) {
       const row = db.prepare(`SELECT ${selectCols} FROM channels WHERE idminiapp = ?`).get(id) as ChannelRow | undefined;
@@ -177,7 +225,7 @@ export async function GET(request: Request) {
         db.close();
         return NextResponse.json({ error: "Канал не найден" }, { status: 404 });
       }
-      const channel = toChannel(row);
+      const channel = toChannel(row, ratingsMap);
       db.close();
       return NextResponse.json(channel);
     }
@@ -223,7 +271,7 @@ export async function GET(request: Request) {
     }
 
     const channels = rows.map((row) => {
-      const channel = toChannel(row);
+      const channel = toChannel(row, ratingsMap);
       // Если запрашивается категория "Пробив", переопределяем категорию для этих приложений
       if (category === "Пробив" && (row.title.toLowerCase().includes("funstat") || row.title.toLowerCase().includes("himera") || row.title.toLowerCase().includes("sherlok"))) {
         channel.category = "Пробив";
