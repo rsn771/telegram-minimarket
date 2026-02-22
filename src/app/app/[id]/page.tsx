@@ -30,6 +30,7 @@ export default function AppDetail() {
   const [submittingReview, setSubmittingReview] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [showAllReviews, setShowAllReviews] = useState(false);
+  const [hasReviewed, setHasReviewed] = useState(false);
   const decodedId = typeof id === "string" ? decodeURIComponent(id) : "";
   const app = decodedId ? getAppById(decodedId) : undefined;
 
@@ -113,6 +114,17 @@ export default function AppDetail() {
       });
   }, [mounted, app?.id]);
 
+  // Проверяем, оставлял ли пользователь уже отзыв на это приложение
+  useEffect(() => {
+    if (!mounted || !app?.id) return;
+    try {
+      const reviewedApps = JSON.parse(localStorage.getItem("reviewed-apps") || "[]") as string[];
+      setHasReviewed(reviewedApps.includes(app.id));
+    } catch {
+      setHasReviewed(false);
+    }
+  }, [mounted, app?.id]);
+
   // Условные возвраты ПОСЛЕ всех хуков
   if (loading) return <div className="p-10 text-center font-sans text-black dark:text-white bg-transparent">Загрузка…</div>;
   if (!app) return <div className="p-10 text-center font-sans text-black dark:text-white bg-transparent">Приложение не найдено</div>;
@@ -188,8 +200,19 @@ export default function AppDetail() {
       const newReview = await response.json();
       setReviews((prev) => [newReview, ...prev]);
       
+      // Сохраняем в localStorage, что пользователь оставил отзыв
+      try {
+        const reviewedApps = JSON.parse(localStorage.getItem("reviewed-apps") || "[]") as string[];
+        if (!reviewedApps.includes(app.id)) {
+          reviewedApps.push(app.id);
+          localStorage.setItem("reviewed-apps", JSON.stringify(reviewedApps));
+        }
+        setHasReviewed(true);
+      } catch {
+        // ignore localStorage errors
+      }
+      
       // Обновляем данные приложения, чтобы получить новый рейтинг из БД
-      // API автоматически обновляет рейтинг в БД при добавлении отзыва
       await refetch();
       
       closeReviewModal();
@@ -286,13 +309,15 @@ export default function AppDetail() {
       <div className="mx-3 mt-3 px-5 py-6 rounded-2xl bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border border-white/40 dark:border-gray-600/40">
         <h2 className="text-[20px] font-bold mb-4 tracking-tight text-black dark:text-white">Отзывы</h2>
         <div className="flex flex-wrap items-end gap-4 mb-5">
-          <button
-            type="button"
-            onClick={openReviewModal}
-            className="text-[15px] font-medium text-[#007AFF] pb-1 active:opacity-70"
-          >
-            Оценить
-          </button>
+          {!hasReviewed && (
+            <button
+              type="button"
+              onClick={openReviewModal}
+              className="text-[15px] font-medium text-[#007AFF] pb-1 active:opacity-70"
+            >
+              Оценить
+            </button>
+          )}
           <p className="text-[32px] font-black text-gray-800 dark:text-gray-200 flex items-center gap-1.5">
             {Number(app.rating).toFixed(1)} <Star size={28} className="fill-amber-400 text-amber-400 stroke-none" />
           </p>
