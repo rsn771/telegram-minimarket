@@ -573,6 +573,28 @@ export function HomeSearch() {
         </section>
       )}
 
+      <div className="w-full max-w-[calc(100%-2.5rem)] mt-8 mx-5 overflow-hidden rounded-2xl bg-white/40 dark:bg-gray-800/40 backdrop-blur-md border border-white/30 dark:border-gray-600/30 box-border">
+        <img
+          src="/team-games-banner.png"
+          alt="Командные игры"
+          className="max-w-full w-full h-auto object-contain object-left block"
+        />
+      </div>
+
+      {apps.length > 0 && (
+        <section className="mt-4">
+          <div className="flex flex-col">
+            {apps
+              .filter((app) =>
+                ["TrueMafiaBot", "durakru_bot", "14", "ChessContestBot", "QuizariumBot"].includes(app.id),
+              )
+              .map((app) => (
+                <AppCard key={app.id} app={app} />
+              ))}
+          </div>
+        </section>
+      )}
+
       <p className="mt-10 mb-6 mx-auto px-4 max-w-[36rem] text-center text-[13px] leading-relaxed text-gray-600 dark:text-gray-400">
         Наш маркет помогает вам находить лучшие сервисы в Telegram. Мы заботливо собираем их в одном месте, но важно помнить: каждое приложение создано независимыми разработчиками. Мы не присваиваем себе авторство сторонних проектов и не можем гарантировать их бесперебойную работу. Мы не занимаемся пропагандой каких-либо идей, товаров или взглядов — наш сервис носит исключительно информационный характер. Пользуйтесь с удовольствием, но будьте бдительны!
       </p>
