@@ -150,6 +150,19 @@ export function HomeSearch() {
     ];
   }, [apps]);
 
+  // Блокируем скролл фона, когда открыт модал категорий
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    if (!categoryModalSlug) return;
+
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [categoryModalSlug]);
+
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {

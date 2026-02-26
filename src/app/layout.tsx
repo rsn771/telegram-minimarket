@@ -13,6 +13,7 @@ import { TelegramWebApp } from "@/components/TelegramWebApp";
 import { AppsProvider } from "@/context/AppsContext";
 import { MyAppsProvider } from "@/context/MyAppsContext";
 import { ThemeProvider } from "@/context/ThemeContext";
+import { SplashScreen } from "@/components/SplashScreen";
 
 export const metadata: Metadata = {
   title: "Telegram Mini Market",
@@ -49,7 +50,7 @@ export default function RootLayout({
         <ThemeProvider>
           <AppsProvider>
             <MyAppsProvider>
-              {children}
+              <SplashScreen>{children}</SplashScreen>
             </MyAppsProvider>
           </AppsProvider>
         </ThemeProvider>
