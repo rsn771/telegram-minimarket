@@ -37,7 +37,7 @@ export function SplashScreen({ children }: { children: React.ReactNode }) {
     <>
       {showSplash && (
         <div
-          className="fixed inset-0 z-[100] bg-white flex items-center justify-center"
+          className="fixed inset-0 z-[100] bg-black flex items-center justify-center"
           aria-hidden="true"
         >
           <div
@@ -57,7 +57,7 @@ export function SplashScreen({ children }: { children: React.ReactNode }) {
             />
           </div>
           <div
-            className="absolute inset-0 bg-white transition-opacity ease-out"
+            className="absolute inset-0 bg-black transition-opacity ease-out"
             style={{
               opacity: step === "hide" ? 1 : 0,
               transitionDuration: `${FADE_OUT_MS}ms`,
