@@ -78,6 +78,7 @@ declare global {
           };
           auth_date: number;
           hash: string;
+          start_param?: string;
         };
         version: string;
         platform: string;
@@ -130,6 +131,18 @@ export function TelegramWebApp() {
       
       // Инициализация Telegram Web App
       tg.ready();
+      
+      // Обработка startapp параметра для deep linking
+      try {
+        const startParam = tg.initDataUnsafe?.start_param;
+        if (startParam && window.location.pathname === "/") {
+          const appId = decodeURIComponent(startParam);
+          window.location.href = `/app/${appId}`;
+          return;
+        }
+      } catch {
+        // Игнорируем ошибки парсинга
+      }
       
       // Разворачиваем приложение на весь экран
       tg.expand();

@@ -2,7 +2,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft, ChevronDown, ChevronUp, Star, ShieldCheck, Plus } from "lucide-react";
+import { ChevronLeft, ChevronDown, ChevronUp, Star, ShieldCheck, Plus, Share2 } from "lucide-react";
 import { hapticFeedback } from "@/utils/telegram";
 import { useApps, type AppItem } from "@/context/AppsContext";
 import { useMyApps } from "@/context/MyAppsContext";
@@ -187,6 +187,30 @@ export default function AppDetail() {
     }
   };
 
+  const handleShare = () => {
+    hapticFeedback("light");
+    const shareUrl = `https://t.me/Mrktminiapp_bot/market?startapp=${encodeURIComponent(app.id)}`;
+    const shareText = `${app.name} — ${app.description?.slice(0, 100) || app.category}`;
+    
+    const w = typeof window !== "undefined" ? (window as unknown as { 
+      Telegram?: { 
+        WebApp?: { 
+          openTelegramLink?: (url: string) => void;
+          switchInlineQuery?: (query: string, chatTypes?: string[]) => void;
+        } 
+      } 
+    }) : null;
+    const tg = w?.Telegram?.WebApp;
+    
+    const tgShareUrl = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`;
+    
+    if (tg?.openTelegramLink) {
+      tg.openTelegramLink(tgShareUrl);
+    } else {
+      window.open(tgShareUrl, "_blank");
+    }
+  };
+
   const handlePlus = () => {
     hapticFeedback("light");
     toggleApp(String(app.id));
@@ -293,6 +317,14 @@ export default function AppDetail() {
                 ) : (
                   <Plus size={18} strokeWidth={2.5} />
                 )}
+              </button>
+              <button
+                type="button"
+                onClick={handleShare}
+                aria-label="Поделиться"
+                className="w-9 h-9 rounded-full flex items-center justify-center transition-colors active:scale-95 bg-white/60 dark:bg-gray-700/60 text-gray-500 dark:text-gray-400 border border-white/40 dark:border-gray-600/40"
+              >
+                <Share2 size={18} strokeWidth={2.5} />
               </button>
               <button
                 onClick={handleOpen}
