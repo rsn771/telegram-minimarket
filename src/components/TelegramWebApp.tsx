@@ -135,8 +135,8 @@ export function TelegramWebApp() {
       // Обработка startapp параметра для deep linking
       try {
         const startParam = tg.initDataUnsafe?.start_param;
-        if (startParam) {
-          const appId = decodeURIComponent(startParam);
+        if (startParam && startParam.startsWith("app_")) {
+          const appId = decodeURIComponent(startParam.slice(4));
           const targetPath = `/app/${appId}`;
           if (window.location.pathname !== targetPath) {
             window.location.replace(targetPath);

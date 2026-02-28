@@ -189,14 +189,14 @@ export default function AppDetail() {
 
   const handleShare = () => {
     hapticFeedback("light");
-    const shareUrl = `https://t.me/Mrktminiapp_bot/market?startapp=${encodeURIComponent(app.id)}`;
+    const baseUrl = "https://t.me/Mrktminiapp_bot/market";
+    const shareUrl = `${baseUrl}?startapp=app_${encodeURIComponent(app.id)}`;
     const shareText = `${app.name} — ${app.description?.slice(0, 100) || app.category}`;
     
     const w = typeof window !== "undefined" ? (window as unknown as { 
       Telegram?: { 
         WebApp?: { 
           openTelegramLink?: (url: string) => void;
-          switchInlineQuery?: (query: string, chatTypes?: string[]) => void;
         } 
       } 
     }) : null;
