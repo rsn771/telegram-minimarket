@@ -164,10 +164,10 @@ export function TelegramWebApp() {
       // Настройка цветовой схемы (если методы доступны)
       try {
         if (typeof tg.setHeaderColor === 'function') {
-          tg.setHeaderColor("#ffffff");
+          tg.setHeaderColor("#030712");
         }
         if (typeof tg.setBackgroundColor === 'function') {
-          tg.setBackgroundColor("#ffffff");
+          tg.setBackgroundColor("#030712");
         }
         if (typeof tg.enableClosingConfirmation === 'function') {
           tg.enableClosingConfirmation();
