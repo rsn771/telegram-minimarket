@@ -652,6 +652,18 @@ export function HomeSearch() {
         </div>
       </Link>
 
+      <Link
+        href="/app/aleksobot"
+        className="relative w-full max-w-[calc(100%-2.5rem)] mt-8 mx-5 overflow-hidden rounded-2xl block"
+        onClick={() => hapticFeedback("light")}
+      >
+        <img
+          src="/alekso-banner.png"
+          alt="Бот Алёша"
+          className="w-full h-auto object-cover block"
+        />
+      </Link>
+
       <p className="mt-10 mb-6 mx-auto px-4 max-w-[36rem] text-center text-[13px] leading-relaxed text-gray-600 dark:text-gray-400">
         Наш маркет помогает вам находить лучшие сервисы в Telegram. Мы заботливо собираем их в одном месте, но важно помнить: каждое приложение создано независимыми разработчиками. Мы не присваиваем себе авторство сторонних проектов и не можем гарантировать их бесперебойную работу. Мы не занимаемся пропагандой каких-либо идей, товаров или взглядов — наш сервис носит исключительно информационный характер. Пользуйтесь с удовольствием, но будьте бдительны!
       </p>
