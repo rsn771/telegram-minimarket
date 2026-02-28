@@ -189,7 +189,7 @@ export default function AppDetail() {
 
   const handleShare = () => {
     hapticFeedback("light");
-    const baseUrl = "https://t.me/Mrktminiapp_bot/market";
+    const baseUrl = "https://t.me/Mrktminiapp_bot/marketminiapp";
     const shareUrl = `${baseUrl}?startapp=app_${encodeURIComponent(app.id)}`;
     const shareText = `${app.name} — ${app.description?.slice(0, 100) || app.category}`;
     
