@@ -442,7 +442,7 @@ export default function AppDetail() {
 
       {similarApps.length > 0 && (
         <div className="mt-8 px-5 pb-8">
-          <h2 className="text-[20px] font-bold mb-4 tracking-tight text-black dark:text-white">Похожие приложения</h2>
+          <h2 className="text-[20px] font-bold mb-4 tracking-tight text-black dark:text-white">Вам также могут понравиться</h2>
           <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2">
             {similarApps.map((similarApp) => (
               <Link
