@@ -153,6 +153,22 @@ export default function AppDetail() {
     }
   }, [mounted, app?.id]);
 
+  // Сохраняем в историю просмотров при заходе на страницу
+  useEffect(() => {
+    if (!mounted || !app?.id) return;
+    try {
+      const stored = localStorage.getItem("recently-viewed-apps");
+      const recentIds: string[] = stored ? JSON.parse(stored) : [];
+      const filtered = recentIds.filter((id) => id !== app.id);
+      filtered.unshift(app.id);
+      const limited = filtered.slice(0, 20);
+      localStorage.setItem("recently-viewed-apps", JSON.stringify(limited));
+      window.dispatchEvent(new Event("recently-viewed-updated"));
+    } catch {
+      // ignore localStorage errors
+    }
+  }, [mounted, app?.id]);
+
   // Условные возвраты ПОСЛЕ всех хуков
   if (loading) return <div className="p-10 text-center font-sans text-black dark:text-white bg-transparent">Загрузка…</div>;
   if (!app) return <div className="p-10 text-center font-sans text-black dark:text-white bg-transparent">Приложение не найдено</div>;
@@ -163,18 +179,6 @@ export default function AppDetail() {
   const handleOpen = () => {
     hapticFeedback("medium");
     if (!app.url) return;
-    
-    // Сохраняем в историю просмотров
-    try {
-      const stored = localStorage.getItem("recently-viewed-apps");
-      const recentIds: string[] = stored ? JSON.parse(stored) : [];
-      const filtered = recentIds.filter((id) => id !== app.id);
-      filtered.unshift(app.id);
-      const limited = filtered.slice(0, 20);
-      localStorage.setItem("recently-viewed-apps", JSON.stringify(limited));
-    } catch {
-      // ignore localStorage errors
-    }
     
     const w = typeof window !== "undefined" ? (window as unknown as { Telegram?: { WebApp?: { openTelegramLink?: (url: string) => void; openLink?: (url: string) => void } } }) : null;
     const tg = w?.Telegram?.WebApp;

@@ -1,7 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const START_MESSAGE =
-  "Market miniapp - некоммерческий сервис для удобства пользователя в выборе и использовании встроенных миниприложений в телеграм. Сервис предоставляет быстрый и легкий доступ к миниприложениям под ваши нужды.";
+const START_MESSAGE = `Добро пожаловать в MRKT — маркет лучших Telegram-приложений 🚀
+
+Здесь собраны проверенные боты и мини-аппы:
+• Нейросети и AI-инструменты
+• VPN-сервисы
+• Игры и развлечения
+• Утилиты для ТГК
+• И многое другое
+
+Открывай каталог и находи полезное 👇`;
+
+const WEBAPP_URL = "https://telegram-minimarket.vercel.app";
 
 export async function POST(request: NextRequest) {
   const token = process.env.TELEGRAM_BOT_TOKEN;
@@ -20,7 +30,7 @@ export async function POST(request: NextRequest) {
   const chatId = body.message?.chat?.id;
   const text = body.message?.text?.trim();
 
-  if (text === "/start" && chatId != null) {
+  if (text?.startsWith("/start") && chatId != null) {
     try {
       const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
         method: "POST",
@@ -28,6 +38,16 @@ export async function POST(request: NextRequest) {
         body: JSON.stringify({
           chat_id: chatId,
           text: START_MESSAGE,
+          reply_markup: {
+            inline_keyboard: [
+              [
+                {
+                  text: "🛒 Открыть маркет",
+                  web_app: { url: WEBAPP_URL },
+                },
+              ],
+            ],
+          },
         }),
       });
       const data = await res.json();
@@ -40,4 +60,8 @@ export async function POST(request: NextRequest) {
   }
 
   return NextResponse.json({ ok: true });
+}
+
+export async function GET() {
+  return NextResponse.json({ ok: true, message: "MRKT webhook is active" });
 }
