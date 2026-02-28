@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useRef, useEffect } from "react";
-import { Search, X } from "lucide-react";
+import { Search, X, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { AppCard } from "@/components/AppCard";
 import { AppIcon } from "@/components/AppIcon";
@@ -69,9 +69,11 @@ export function HomeSearch() {
   const [showAllNeural, setShowAllNeural] = useState(false);
   const [showAllGames, setShowAllGames] = useState(false);
   const [categoryModalSlug, setCategoryModalSlug] = useState<string | null>(null);
+  const [rixonBlurred, setRixonBlurred] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const scrollRestoredRef = useRef(false);
+  const rixonBannerRef = useRef<HTMLAnchorElement>(null);
 
   useEffect(() => {
     const saved = loadExpanded();
@@ -110,6 +112,34 @@ export function HomeSearch() {
     return () => cancelAnimationFrame(id);
   }, [showAllTopCharts, showAllNeural, showAllGames]);
 
+  useEffect(() => {
+    if (!rixonBannerRef.current) return;
+    let blurTimeout: ReturnType<typeof setTimeout> | null = null;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (entry.isIntersecting) {
+          setRixonBlurred(true);
+          blurTimeout = setTimeout(() => {
+            setRixonBlurred(false);
+          }, 3000);
+        } else {
+          if (blurTimeout) {
+            clearTimeout(blurTimeout);
+            blurTimeout = null;
+          }
+          setRixonBlurred(false);
+        }
+      },
+      { threshold: 0.5 }
+    );
+    observer.observe(rixonBannerRef.current);
+    return () => {
+      observer.disconnect();
+      if (blurTimeout) clearTimeout(blurTimeout);
+    };
+  }, []);
+
   const matches = useMemo(() => filterApps(apps, query), [apps, query]);
   const hasQuery = query.trim().length > 0;
 
@@ -119,6 +149,8 @@ export function HomeSearch() {
       { name: "Velvet VPN", app: find("velvet") },
       { name: "Quattro VPN", app: find("quattro") },
       { name: "Shadownet VPN", app: find("shadownet") },
+      { name: "Boxy VPN", app: find("boxy") },
+      { name: "VPN Direct", app: find("vpn direct") },
     ];
   }, [apps]);
 
@@ -594,6 +626,30 @@ export function HomeSearch() {
           </div>
         </section>
       )}
+
+      <Link
+        ref={rixonBannerRef}
+        href="/app/26"
+        className="relative w-full max-w-[calc(100%-2.5rem)] mt-8 mx-5 overflow-hidden rounded-2xl block"
+        onClick={() => hapticFeedback("light")}
+      >
+        <img
+          src="/rixon-banner.png"
+          alt="R1xon Cheats"
+          className={`w-full h-auto object-cover block transition-all duration-500 ${rixonBlurred ? "blur-md scale-105" : ""}`}
+        />
+        <div
+          className={`absolute inset-0 flex items-center justify-center transition-opacity duration-500 ${rixonBlurred ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+        >
+          <span className="text-white text-2xl font-bold drop-shadow-lg">читы для игр🤫</span>
+        </div>
+        <div className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent px-5 py-4 transition-opacity duration-500 ${rixonBlurred ? "opacity-0" : "opacity-100"}`}>
+          <div className="flex items-center justify-between">
+            <span className="text-white font-semibold text-[17px]">Перейти</span>
+            <ChevronRight className="text-white" size={24} strokeWidth={2} />
+          </div>
+        </div>
+      </Link>
 
       <p className="mt-10 mb-6 mx-auto px-4 max-w-[36rem] text-center text-[13px] leading-relaxed text-gray-600 dark:text-gray-400">
         Наш маркет помогает вам находить лучшие сервисы в Telegram. Мы заботливо собираем их в одном месте, но важно помнить: каждое приложение создано независимыми разработчиками. Мы не присваиваем себе авторство сторонних проектов и не можем гарантировать их бесперебойную работу. Мы не занимаемся пропагандой каких-либо идей, товаров или взглядов — наш сервис носит исключительно информационный характер. Пользуйтесь с удовольствием, но будьте бдительны!

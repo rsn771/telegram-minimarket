@@ -21,6 +21,7 @@
     "react-dom": "19.2.3"
   },
   "devDependencies": {
+    "@breezystack/lamejs": "^1.2.7",
     "@types/better-sqlite3": "^7.6.11",
     "@types/node": "^20",
     "@types/react": "^19",
