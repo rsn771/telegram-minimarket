@@ -71,6 +71,7 @@ export function HomeSearch() {
   const [showAllGames, setShowAllGames] = useState(false);
   const [categoryModalSlug, setCategoryModalSlug] = useState<string | null>(null);
   const [rixonBlurred, setRixonBlurred] = useState(false);
+  const [recentlyViewedIds, setRecentlyViewedIds] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const scrollRestoredRef = useRef(false);
@@ -81,6 +82,34 @@ export function HomeSearch() {
     setShowAllTopCharts(saved.topCharts);
     setShowAllNeural(saved.neural);
     setShowAllGames(saved.games);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const stored = localStorage.getItem("recently-viewed-apps");
+      if (stored) {
+        setRecentlyViewedIds(JSON.parse(stored) as string[]);
+      }
+    } catch {
+      // ignore
+    }
+    const handleStorage = () => {
+      try {
+        const stored = localStorage.getItem("recently-viewed-apps");
+        if (stored) {
+          setRecentlyViewedIds(JSON.parse(stored) as string[]);
+        }
+      } catch {
+        // ignore
+      }
+    };
+    window.addEventListener("storage", handleStorage);
+    window.addEventListener("focus", handleStorage);
+    return () => {
+      window.removeEventListener("storage", handleStorage);
+      window.removeEventListener("focus", handleStorage);
+    };
   }, []);
 
   useEffect(() => {
@@ -182,6 +211,16 @@ export function HomeSearch() {
       { name: "GPT-4 Unlimited", app: find("gpt-4 unlimited") },
     ];
   }, [apps]);
+
+  const appOfTheDay = useMemo(() => {
+    return apps.find((a) => a.id === "notspybot");
+  }, [apps]);
+
+  const recentlyViewedApps = useMemo(() => {
+    return recentlyViewedIds
+      .map((id) => apps.find((a) => a.id === id))
+      .filter(Boolean) as typeof apps;
+  }, [apps, recentlyViewedIds]);
 
   // Блокируем скролл фона, когда открыт модал категорий
   useEffect(() => {
@@ -374,7 +413,63 @@ export function HomeSearch() {
         </div>
       </header>
 
-      <section id="top-charts" className="mt-2 scroll-mt-[calc(env(safe-area-inset-top,20px)+64px)]">
+      {appOfTheDay && (
+        <section className="mt-6 px-5">
+          <h2 className="text-[22px] font-bold text-black dark:text-white mb-4">Приложение дня</h2>
+          <Link
+            href={`/app/${appOfTheDay.id}`}
+            onClick={() => hapticFeedback("light")}
+            className="block rounded-3xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 p-[2px] shadow-xl shadow-purple-500/20"
+          >
+            <div className="rounded-[22px] bg-white dark:bg-gray-900 p-5">
+              <div className="flex items-center gap-4">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start gap-4">
+                    <div className="w-24 h-24 flex-shrink-0 overflow-hidden rounded-[22px] border-2 border-white/20 shadow-lg">
+                      <AppIcon src={appOfTheDay.icon} alt={appOfTheDay.name} className="w-full h-full object-cover" />
+                    </div>
+                    <div className="flex-1 min-w-0 pt-1">
+                      <h3 className="text-[20px] font-bold text-black dark:text-white truncate">{appOfTheDay.name}</h3>
+                      <p className="text-[14px] text-indigo-600 dark:text-indigo-400 font-medium mt-1">{appOfTheDay.category}</p>
+                      <div className="flex items-center gap-1 mt-2">
+                        <span className="text-yellow-500">★</span>
+                        <span className="text-[14px] font-medium text-gray-700 dark:text-gray-300">{appOfTheDay.rating.toFixed(1)}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <p className="mt-4 text-[15px] leading-relaxed text-gray-600 dark:text-gray-400">
+                    {appOfTheDay.description || "Узнавайте об удалённых и изменённых сообщениях в ваших чатах. Бот мгновенно уведомит вас, когда кто-то удалит или отредактирует сообщение — вы всегда будете в курсе."}
+                  </p>
+                  <p className="mt-3 text-[13px] text-gray-500 dark:text-gray-500">Выбор редакции</p>
+                </div>
+                <span className="px-6 py-3 rounded-full bg-indigo-500 text-white text-[16px] font-semibold flex-shrink-0">Открыть</span>
+              </div>
+            </div>
+          </Link>
+        </section>
+      )}
+
+      {recentlyViewedApps.length > 0 && (
+        <section className="mt-6">
+          <h2 className="text-[22px] font-bold text-black dark:text-white px-5 mb-4">Смотрели недавно</h2>
+          <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-2">
+            {recentlyViewedApps.map((app) => (
+              <Link
+                key={app.id}
+                href={`/app/${app.id}`}
+                onClick={() => hapticFeedback("light")}
+                className="flex-shrink-0"
+              >
+                <div className="w-16 h-16 overflow-hidden rounded-[18px] border border-gray-200/80 dark:border-gray-600/80 shadow-sm active:scale-95 transition-transform">
+                  <AppIcon src={app.icon} alt={app.name} className="w-full h-full object-cover" />
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      <section id="top-charts" className="mt-6 scroll-mt-[calc(env(safe-area-inset-top,20px)+64px)]">
         <div className="px-5 mb-4 flex justify-between items-end">
           <h2 className="text-[22px] font-bold text-black dark:text-white">Топ чарты</h2>
           <span className="text-[#007AFF] text-[17px]"> </span>

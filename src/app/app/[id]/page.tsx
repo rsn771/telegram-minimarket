@@ -135,6 +135,19 @@ export default function AppDetail() {
   const handleOpen = () => {
     hapticFeedback("medium");
     if (!app.url) return;
+    
+    // Сохраняем в историю просмотров
+    try {
+      const stored = localStorage.getItem("recently-viewed-apps");
+      const recentIds: string[] = stored ? JSON.parse(stored) : [];
+      const filtered = recentIds.filter((id) => id !== app.id);
+      filtered.unshift(app.id);
+      const limited = filtered.slice(0, 20);
+      localStorage.setItem("recently-viewed-apps", JSON.stringify(limited));
+    } catch {
+      // ignore localStorage errors
+    }
+    
     const w = typeof window !== "undefined" ? (window as unknown as { Telegram?: { WebApp?: { openTelegramLink?: (url: string) => void; openLink?: (url: string) => void } } }) : null;
     const tg = w?.Telegram?.WebApp;
     if (tg && /^https?:\/\/(t\.me|telegram\.me)\//i.test(app.url)) {
