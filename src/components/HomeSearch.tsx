@@ -422,28 +422,26 @@ export function HomeSearch() {
             className="block rounded-3xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 p-[2px] shadow-xl shadow-purple-500/20"
           >
             <div className="rounded-[22px] bg-white dark:bg-gray-900 p-5">
-              <div className="flex items-center gap-4">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start gap-4">
-                    <div className="w-24 h-24 flex-shrink-0 overflow-hidden rounded-[22px] border-2 border-white/20 shadow-lg">
-                      <AppIcon src={appOfTheDay.icon} alt={appOfTheDay.name} className="w-full h-full object-cover" />
-                    </div>
-                    <div className="flex-1 min-w-0 pt-1">
-                      <h3 className="text-[20px] font-bold text-black dark:text-white truncate">{appOfTheDay.name}</h3>
-                      <p className="text-[14px] text-indigo-600 dark:text-indigo-400 font-medium mt-1">{appOfTheDay.category}</p>
-                      <div className="flex items-center gap-1 mt-2">
-                        <span className="text-yellow-500">★</span>
-                        <span className="text-[14px] font-medium text-gray-700 dark:text-gray-300">{appOfTheDay.rating.toFixed(1)}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <p className="mt-4 text-[15px] leading-relaxed text-gray-600 dark:text-gray-400">
-                    {appOfTheDay.description || "Узнавайте об удалённых и изменённых сообщениях в ваших чатах. Бот мгновенно уведомит вас, когда кто-то удалит или отредактирует сообщение — вы всегда будете в курсе."}
-                  </p>
-                  <p className="mt-3 text-[13px] text-gray-500 dark:text-gray-500">Выбор редакции</p>
+              <div className="flex items-start gap-4">
+                <div className="w-20 h-20 flex-shrink-0 overflow-hidden rounded-[18px] border-2 border-white/20 shadow-lg">
+                  <AppIcon src={appOfTheDay.icon} alt={appOfTheDay.name} className="w-full h-full object-cover" />
                 </div>
-                <span className="px-6 py-3 rounded-full bg-indigo-500 text-white text-[16px] font-semibold flex-shrink-0">Открыть</span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-[18px] font-bold text-black dark:text-white">{appOfTheDay.name}</h3>
+                    <ChevronRight className="text-indigo-500 flex-shrink-0" size={28} strokeWidth={3} />
+                  </div>
+                  <p className="text-[14px] text-indigo-600 dark:text-indigo-400 font-medium mt-1">{appOfTheDay.category}</p>
+                  <div className="flex items-center gap-1 mt-1">
+                    <span className="text-yellow-500">★</span>
+                    <span className="text-[14px] font-medium text-gray-700 dark:text-gray-300">{appOfTheDay.rating.toFixed(1)}</span>
+                  </div>
+                </div>
               </div>
+              <p className="mt-4 text-[15px] leading-relaxed text-gray-600 dark:text-gray-400">
+                {appOfTheDay.description || "Узнавайте об удалённых и изменённых сообщениях в ваших чатах. Бот мгновенно уведомит вас, когда кто-то удалит или отредактирует сообщение — вы всегда будете в курсе."}
+              </p>
+              <p className="mt-3 text-[13px] text-gray-500 dark:text-gray-500">Выбор редакции</p>
             </div>
           </Link>
         </section>
