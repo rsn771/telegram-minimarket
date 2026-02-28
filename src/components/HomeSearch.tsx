@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useRef, useEffect } from "react";
-import { Search, X, ChevronRight } from "lucide-react";
+import { Search, X, ChevronRight, Star, Eye, Send, GraduationCap, Wand2, Bitcoin } from "lucide-react";
 import Link from "next/link";
 import { AppCard } from "@/components/AppCard";
 import { AppIcon } from "@/components/AppIcon";
@@ -72,6 +72,7 @@ export function HomeSearch() {
   const [categoryModalSlug, setCategoryModalSlug] = useState<string | null>(null);
   const [rixonBlurred, setRixonBlurred] = useState(false);
   const [recentlyViewedIds, setRecentlyViewedIds] = useState<string[]>([]);
+  const [collectionModalSlug, setCollectionModalSlug] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const scrollRestoredRef = useRef(false);
@@ -222,10 +223,28 @@ export function HomeSearch() {
       .filter(Boolean) as typeof apps;
   }, [apps, recentlyViewedIds]);
 
-  // Блокируем скролл фона, когда открыт модал категорий
+  const COLLECTIONS = useMemo(() => [
+    { slug: "must-have", title: "Нужны всем", icon: Star, gradient: "from-amber-400 to-orange-500", iconColor: "text-amber-100", appIds: [] as string[] },
+    { slug: "spy", title: "Шпион", icon: Eye, gradient: "from-slate-700 to-slate-900", iconColor: "text-slate-300", appIds: [] as string[] },
+    { slug: "tgk", title: "Для своего ТГК", icon: Send, gradient: "from-sky-400 to-blue-600", iconColor: "text-sky-100", appIds: [] as string[] },
+    { slug: "study", title: "Учёба", icon: GraduationCap, gradient: "from-emerald-400 to-green-600", iconColor: "text-emerald-100", appIds: [] as string[] },
+    { slug: "generation", title: "Генерация", icon: Wand2, gradient: "from-violet-500 to-purple-700", iconColor: "text-violet-100", appIds: [] as string[] },
+    { slug: "crypto", title: "Криптоинвестор", icon: Bitcoin, gradient: "from-orange-400 to-yellow-500", iconColor: "text-orange-100", appIds: [] as string[] },
+  ], []);
+
+  const collectionApps = useMemo(() => {
+    if (!collectionModalSlug) return [];
+    const collection = COLLECTIONS.find((c) => c.slug === collectionModalSlug);
+    if (!collection) return [];
+    return collection.appIds
+      .map((id) => apps.find((a) => a.id === id))
+      .filter(Boolean) as typeof apps;
+  }, [apps, collectionModalSlug, COLLECTIONS]);
+
+  // Блокируем скролл фона, когда открыт модал категорий или подборок
   useEffect(() => {
     if (typeof document === "undefined") return;
-    if (!categoryModalSlug) return;
+    if (!categoryModalSlug && !collectionModalSlug) return;
 
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -233,7 +252,7 @@ export function HomeSearch() {
     return () => {
       document.body.style.overflow = prevOverflow;
     };
-  }, [categoryModalSlug]);
+  }, [categoryModalSlug, collectionModalSlug]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -496,6 +515,31 @@ export function HomeSearch() {
             </button>
           </div>
         )}
+
+        <section className="mt-8">
+          <h2 className="text-[22px] font-bold text-black dark:text-white px-5 mb-4">Подборки</h2>
+          <div className="flex gap-4 px-5 overflow-x-auto scrollbar-hide pb-3">
+            {COLLECTIONS.map((collection) => {
+              const IconComponent = collection.icon;
+              return (
+                <button
+                  key={collection.slug}
+                  type="button"
+                  onClick={() => {
+                    hapticFeedback("light");
+                    setCollectionModalSlug(collection.slug);
+                  }}
+                  className={`flex-shrink-0 w-36 h-28 rounded-2xl bg-gradient-to-br ${collection.gradient} shadow-lg flex flex-col items-center justify-center gap-2 active:scale-95 transition-all duration-200 hover:shadow-xl`}
+                >
+                  <IconComponent size={32} strokeWidth={2} className={collection.iconColor} />
+                  <span className="text-[13px] font-bold text-white text-center px-2 leading-tight drop-shadow-sm">
+                    {collection.title}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </section>
 
         <div
           className="mt-8 mb-8 py-6"
@@ -819,6 +863,51 @@ export function HomeSearch() {
                   </div>
                 );
               })()}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {collectionModalSlug && (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/40"
+          onClick={() => setCollectionModalSlug(null)}
+        >
+          <div
+            className="w-full max-w-lg bg-white/90 dark:bg-gray-900/95 backdrop-blur-xl rounded-t-3xl shadow-2xl flex flex-col max-h-[80dvh] animate-[slideUp_0.25s_ease-out]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200/60 dark:border-gray-700/60">
+              {(() => {
+                const col = COLLECTIONS.find((c) => c.slug === collectionModalSlug);
+                const IconComp = col?.icon;
+                return (
+                  <h3 className="text-lg font-bold text-black dark:text-white flex items-center gap-2">
+                    {IconComp && <IconComp size={22} strokeWidth={2} className="text-gray-600 dark:text-gray-300" />}
+                    {col?.title}
+                  </h3>
+                );
+              })()}
+              <button
+                type="button"
+                onClick={() => setCollectionModalSlug(null)}
+                className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-200/80 dark:bg-gray-700/80 text-gray-600 dark:text-gray-300 active:bg-gray-300 dark:active:bg-gray-600 transition-colors"
+              >
+                <X size={24} strokeWidth={2} />
+              </button>
+            </div>
+            <div className="overflow-y-auto flex-1 min-h-0 px-2">
+              {collectionApps.length === 0 ? (
+                <div className="py-12 text-center">
+                  <p className="text-gray-500 dark:text-gray-400 text-sm">Скоро здесь появятся приложения</p>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-2 pb-4">
+                  {collectionApps.map((app) => (
+                    <AppCard key={app.id} app={app} />
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
