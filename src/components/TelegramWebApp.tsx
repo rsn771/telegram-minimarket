@@ -135,10 +135,13 @@ export function TelegramWebApp() {
       // Обработка startapp параметра для deep linking
       try {
         const startParam = tg.initDataUnsafe?.start_param;
-        if (startParam && window.location.pathname === "/") {
+        if (startParam) {
           const appId = decodeURIComponent(startParam);
-          window.location.href = `/app/${appId}`;
-          return;
+          const targetPath = `/app/${appId}`;
+          if (window.location.pathname !== targetPath) {
+            window.location.replace(targetPath);
+            return;
+          }
         }
       } catch {
         // Игнорируем ошибки парсинга

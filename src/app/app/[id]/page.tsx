@@ -296,9 +296,19 @@ export default function AppDetail() {
           <div className="relative shrink-0">
             <AppIcon src={app.icon} alt={app.name} className="w-28 h-28 rounded-[22%] shadow-lg border border-white/40 dark:border-gray-600/40 object-cover" />
           </div>
-          <div className="flex flex-col justify-between py-1">
+          <div className="flex flex-col justify-between py-1 flex-1 min-w-0">
             <div>
-              <h1 className="text-[22px] font-bold leading-tight tracking-tight text-black dark:text-white">{app.name}</h1>
+              <div className="flex items-center gap-2">
+                <h1 className="text-[22px] font-bold leading-tight tracking-tight text-black dark:text-white truncate">{app.name}</h1>
+                <button
+                  type="button"
+                  onClick={handleShare}
+                  aria-label="Поделиться"
+                  className="w-8 h-8 rounded-full flex items-center justify-center transition-colors active:scale-95 bg-white/60 dark:bg-gray-700/60 text-gray-500 dark:text-gray-400 border border-white/40 dark:border-gray-600/40 flex-shrink-0"
+                >
+                  <Share2 size={16} strokeWidth={2.5} />
+                </button>
+              </div>
               <p className="text-gray-500 dark:text-gray-400 text-[15px] font-medium">{app.category.toUpperCase()}</p>
             </div>
             <div className="flex items-center gap-2">
@@ -317,14 +327,6 @@ export default function AppDetail() {
                 ) : (
                   <Plus size={18} strokeWidth={2.5} />
                 )}
-              </button>
-              <button
-                type="button"
-                onClick={handleShare}
-                aria-label="Поделиться"
-                className="w-9 h-9 rounded-full flex items-center justify-center transition-colors active:scale-95 bg-white/60 dark:bg-gray-700/60 text-gray-500 dark:text-gray-400 border border-white/40 dark:border-gray-600/40"
-              >
-                <Share2 size={18} strokeWidth={2.5} />
               </button>
               <button
                 onClick={handleOpen}
