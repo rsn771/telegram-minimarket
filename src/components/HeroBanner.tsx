@@ -137,7 +137,7 @@ export function HeroBanner() {
           type="button"
           onClick={() => {
             hapticFeedback("light");
-            document.getElementById("top-charts")?.scrollIntoView({ behavior: "smooth", block: "start" });
+            document.getElementById("app-of-the-day")?.scrollIntoView({ behavior: "smooth", block: "start" });
           }}
           className="px-6 py-3 rounded-2xl bg-white/35 dark:bg-gray-800/35 backdrop-blur-xl border border-white/30 dark:border-gray-600/30 shadow-lg shadow-black/5 text-gray-900 dark:text-white font-semibold text-[17px] active:opacity-80 transition-opacity"
         >

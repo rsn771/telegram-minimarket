@@ -414,7 +414,7 @@ export function HomeSearch() {
       </header>
 
       {appOfTheDay && (
-        <section className="mt-6 px-5">
+        <section id="app-of-the-day" className="mt-6 px-5 scroll-mt-[calc(env(safe-area-inset-top,20px)+64px)]">
           <h2 className="text-[22px] font-bold text-black dark:text-white mb-4">Приложение дня</h2>
           <Link
             href={`/app/${appOfTheDay.id}`}
