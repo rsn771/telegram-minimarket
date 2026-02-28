@@ -1,9 +1,10 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import { ChevronLeft, ChevronDown, ChevronUp, Star, ShieldCheck, Plus } from "lucide-react";
 import { hapticFeedback } from "@/utils/telegram";
-import { useApps } from "@/context/AppsContext";
+import { useApps, type AppItem } from "@/context/AppsContext";
 import { useMyApps } from "@/context/MyAppsContext";
 import { AppIcon } from "@/components/AppIcon";
 
@@ -19,7 +20,7 @@ type Review = {
 export default function AppDetail() {
   const { id } = useParams();
   const router = useRouter();
-  const { getAppById, loading, refetch } = useApps();
+  const { apps, getAppById, loading, refetch } = useApps();
   const { toggleApp, isInMyApps } = useMyApps();
   const [fullscreenScreenshotIndex, setFullscreenScreenshotIndex] = useState<number | null>(null);
   const [showReviewModal, setShowReviewModal] = useState(false);
@@ -33,6 +34,33 @@ export default function AppDetail() {
   const [hasReviewed, setHasReviewed] = useState(false);
   const decodedId = typeof id === "string" ? decodeURIComponent(id) : "";
   const app = decodedId ? getAppById(decodedId) : undefined;
+
+  const similarApps = useMemo(() => {
+    if (!app) return [];
+    
+    const isQualityApp = (a: AppItem): boolean => {
+      if (a.id === app.id) return false;
+      if (a.isVerified) return true;
+      if (a.rating >= 3.0) return true;
+      if (a.screenshots && a.screenshots.length > 0) return true;
+      if (a.description && a.description.length > 50) return true;
+      return false;
+    };
+    
+    const sameCategory = apps
+      .filter((a) => a.category === app.category && isQualityApp(a))
+      .sort((a, b) => {
+        if (a.isVerified && !b.isVerified) return -1;
+        if (!a.isVerified && b.isVerified) return 1;
+        if (b.rating !== a.rating) return b.rating - a.rating;
+        const aHasScreens = (a.screenshots?.length ?? 0) > 0 ? 1 : 0;
+        const bHasScreens = (b.screenshots?.length ?? 0) > 0 ? 1 : 0;
+        return bHasScreens - aHasScreens;
+      })
+      .slice(0, 5);
+    
+    return sameCategory;
+  }, [apps, app]);
 
   // ВСЕ хуки должны быть вызваны ДО любых условных возвратов (правила React Hooks)
   // Используем встроенную кнопку Telegram BackButton вместо собственной панели
@@ -411,6 +439,27 @@ export default function AppDetail() {
           </div>
         )}
       </div>
+
+      {similarApps.length > 0 && (
+        <div className="mt-8 px-5 pb-8">
+          <h2 className="text-[20px] font-bold mb-4 tracking-tight text-black dark:text-white">Похожие приложения</h2>
+          <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2">
+            {similarApps.map((similarApp) => (
+              <Link
+                key={similarApp.id}
+                href={`/app/${similarApp.id}`}
+                onClick={() => hapticFeedback("light")}
+                className="flex-shrink-0 w-20"
+              >
+                <div className="w-20 h-20 overflow-hidden rounded-[18px] border border-gray-200/80 dark:border-gray-600/80 shadow-sm active:scale-95 transition-transform">
+                  <AppIcon src={similarApp.icon} alt={similarApp.name} className="w-full h-full object-cover" />
+                </div>
+                <p className="mt-2 text-[12px] text-center text-gray-700 dark:text-gray-300 line-clamp-2 leading-tight">{similarApp.name}</p>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       {showReviewModal && (
         <div
