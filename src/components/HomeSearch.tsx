@@ -224,12 +224,12 @@ export function HomeSearch() {
   }, [apps, recentlyViewedIds]);
 
   const COLLECTIONS = useMemo(() => [
-    { slug: "must-have", title: "Нужны всем", icon: Star, gradient: "from-amber-400 to-orange-500", iconColor: "text-amber-100", appIds: [] as string[] },
-    { slug: "spy", title: "Шпион", icon: Eye, gradient: "from-slate-700 to-slate-900", iconColor: "text-slate-300", appIds: [] as string[] },
-    { slug: "tgk", title: "Для своего ТГК", icon: Send, gradient: "from-sky-400 to-blue-600", iconColor: "text-sky-100", appIds: [] as string[] },
-    { slug: "study", title: "Учёба", icon: GraduationCap, gradient: "from-emerald-400 to-green-600", iconColor: "text-emerald-100", appIds: [] as string[] },
-    { slug: "generation", title: "Генерация", icon: Wand2, gradient: "from-violet-500 to-purple-700", iconColor: "text-violet-100", appIds: [] as string[] },
-    { slug: "crypto", title: "Криптоинвестор", icon: Bitcoin, gradient: "from-orange-400 to-yellow-500", iconColor: "text-orange-100", appIds: [] as string[] },
+    { slug: "must-have", title: "Нужны всем", icon: Star, gradient: "from-amber-400 to-orange-500", iconColor: "text-amber-100", appIds: ["4", "27", "25"] },
+    { slug: "spy", title: "Шпион", icon: Eye, gradient: "from-slate-700 to-slate-900", iconColor: "text-slate-300", appIds: ["notspybot", "41", "sherlok_bot", "25"] },
+    { slug: "tgk", title: "Для своего ТГК", icon: Send, gradient: "from-sky-400 to-blue-600", iconColor: "text-sky-100", appIds: ["6", "anonaskbot", "anonimnyye_voprosy_bot", "box14bot", "22"] },
+    { slug: "study", title: "Учёба", icon: GraduationCap, gradient: "from-emerald-400 to-green-600", iconColor: "text-emerald-100", appIds: ["chatgpt_gpt4bot", "GPT4Telegrambot", "4", "13", "15", "clips_robot", "iqcoinapp_bot"] },
+    { slug: "generation", title: "Генерация", icon: Wand2, gradient: "from-violet-500 to-purple-700", iconColor: "text-violet-100", appIds: ["chatgpt_gpt4bot", "GPT4Telegrambot", "4", "gpt3_unlim_chatbot", "aleksobot", "40", "trendiobot"] },
+    { slug: "crypto", title: "Криптоинвестор", icon: Bitcoin, gradient: "from-orange-400 to-yellow-500", iconColor: "text-orange-100", appIds: ["21", "11", "3", "1", "30"] },
   ], []);
 
   const collectionApps = useMemo(() => {
