@@ -11,15 +11,18 @@ const API_URL = TELEGRAM_TOKEN
 // Получатели заявок
 const OWNER_IDS = [5651149188, 728379071];
 
-const START_TEXT =
-  "Мы открыты к вашим предложениям. Заполните следующую форму:\n\n" +
-  "1. ссылка на бота с миниаппом / бота\n" +
-  "2. название\n" +
-  "3. описание\n" +
-  "4. лого\n" +
-  "5. скриншоты (по возможности) размером 370x650\n" +
-  "6. ссылка типа: https://t.me/юз_миниаппа_без_@/app?startapp\n" +
-  "7. ваш юзернейм для связи";
+const START_TEXT = `Добро пожаловать в MRKT — маркет лучших Telegram-приложений 🚀
+
+Здесь собраны проверенные боты и мини-аппы:
+• Нейросети и AI-инструменты
+• VPN-сервисы
+• Игры и развлечения
+• Утилиты для ТГК
+• И многое другое
+
+Открывай каталог и находи полезное 👇`;
+
+const WEBAPP_URL = "https://telegram-minimarket.vercel.app";
 
 type TelegramUser = {
   id: number;
@@ -94,9 +97,22 @@ export async function POST(req: Request) {
   const text = msg.text ?? "";
   const caption = msg.caption ?? "";
 
-  // /start → отправляем форму
-  if (text === "/start") {
-    await sendMessage(chatId, START_TEXT);
+  // /start → отправляем приветствие с кнопкой маркета
+  if (text === "/start" || text.startsWith("/start ")) {
+    await callTelegram("sendMessage", {
+      chat_id: chatId,
+      text: START_TEXT,
+      reply_markup: {
+        inline_keyboard: [
+          [
+            {
+              text: "🛒 Открыть маркет",
+              web_app: { url: WEBAPP_URL },
+            },
+          ],
+        ],
+      },
+    });
     return NextResponse.json({ ok: true });
   }
 
