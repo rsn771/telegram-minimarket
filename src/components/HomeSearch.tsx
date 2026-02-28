@@ -26,7 +26,8 @@ function filterApps(apps: AppItem[], query: string): AppItem[] {
     (app) =>
       app.name.toLowerCase().includes(q) ||
       app.id.toLowerCase().includes(q) ||
-      app.category.toLowerCase().includes(q)
+      app.category.toLowerCase().includes(q) ||
+      app.description.toLowerCase().includes(q)
   );
 }
 
