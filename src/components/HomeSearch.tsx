@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useRef, useEffect } from "react";
-import { Search, X, ChevronRight, Star, Eye, Send, GraduationCap, Wand2, Bitcoin } from "lucide-react";
+import { Search, X, ChevronRight, Star, Eye, Send, GraduationCap, Wand2, Bitcoin, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { AppCard } from "@/components/AppCard";
 import { AppIcon } from "@/components/AppIcon";
@@ -211,6 +211,14 @@ export function HomeSearch() {
       { name: "GigaChat", app: find("gigachat") },
       { name: "GPT-4 Unlimited", app: find("gpt-4 unlimited") },
     ];
+  }, [apps]);
+
+  const NEW_APP_IDS = ["aleksobot", "vpndirectbot", "boxyvpn_bot", "QuizariumBot", "ChessContestBot", "durakru_bot", "TrueMafiaBot", "gpt3_unlim_chatbot", "lootmeme_bot", "lootglide_bot"];
+
+  const newApps = useMemo(() => {
+    return NEW_APP_IDS
+      .map((id) => apps.find((a) => a.id === id))
+      .filter(Boolean) as typeof apps;
   }, [apps]);
 
   const appOfTheDay = useMemo(() => {
@@ -465,6 +473,31 @@ export function HomeSearch() {
           </Link>
         </section>
       )}
+
+      {newApps.length > 0 && (
+        <section className="mt-6">
+          <div className="flex items-center gap-2 px-5 mb-4">
+            <Sparkles size={20} className="text-yellow-500" />
+            <h2 className="text-[22px] font-bold text-black dark:text-white">Новинки</h2>
+          </div>
+          <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-2">
+            {newApps.map((app) => (
+              <Link
+                key={app.id}
+                href={`/app/${app.id}`}
+                onClick={() => hapticFeedback("light")}
+                className="flex-shrink-0 w-28"
+              >
+                <div className="w-16 h-16 mx-auto overflow-hidden rounded-[18px] border-2 border-yellow-400/50 shadow-lg shadow-yellow-500/20 active:scale-95 transition-transform">
+                  <AppIcon src={app.icon} alt={app.name} className="w-full h-full object-cover" />
+                </div>
+                <p className="mt-2 text-[12px] text-center text-gray-700 dark:text-gray-300 truncate">{app.name}</p>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
 
       {recentlyViewedApps.length > 0 && (
         <section className="mt-6">

@@ -6,6 +6,7 @@ const STORAGE_KEY = "telegram-minimarket-my-apps";
 
 type MyAppsContextType = {
   myAppIds: string[];
+  setMyAppIds: (ids: string[]) => void;
   addApp: (id: string) => void;
   removeApp: (id: string) => void;
   toggleApp: (id: string) => void;
@@ -34,15 +35,20 @@ function saveToStorage(ids: string[]) {
 }
 
 export function MyAppsProvider({ children }: { children: React.ReactNode }) {
-  const [myAppIds, setMyAppIds] = useState<string[]>([]);
+  const [myAppIds, setMyAppIdsState] = useState<string[]>([]);
 
   useEffect(() => {
-    setMyAppIds(loadFromStorage());
+    setMyAppIdsState(loadFromStorage());
+  }, []);
+
+  const setMyAppIds = useCallback((ids: string[]) => {
+    setMyAppIdsState(ids);
+    saveToStorage(ids);
   }, []);
 
   const addApp = useCallback((id: string) => {
     const sid = String(id);
-    setMyAppIds((prev) => {
+    setMyAppIdsState((prev) => {
       const next = [...new Set([...prev, sid])];
       saveToStorage(next);
       return next;
@@ -51,7 +57,7 @@ export function MyAppsProvider({ children }: { children: React.ReactNode }) {
 
   const removeApp = useCallback((id: string) => {
     const sid = String(id);
-    setMyAppIds((prev) => {
+    setMyAppIdsState((prev) => {
       const next = prev.filter((x) => x !== sid);
       saveToStorage(next);
       return next;
@@ -61,7 +67,7 @@ export function MyAppsProvider({ children }: { children: React.ReactNode }) {
   const toggleApp = useCallback(
     (id: string) => {
       const sid = String(id);
-      setMyAppIds((prev) => {
+      setMyAppIdsState((prev) => {
         const next = prev.includes(sid) ? prev.filter((x) => x !== sid) : [...prev, sid];
         saveToStorage(next);
         return next;
@@ -76,7 +82,7 @@ export function MyAppsProvider({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <MyAppsContext.Provider value={{ myAppIds, addApp, removeApp, toggleApp, isInMyApps }}>
+    <MyAppsContext.Provider value={{ myAppIds, setMyAppIds, addApp, removeApp, toggleApp, isInMyApps }}>
       {children}
     </MyAppsContext.Provider>
   );
