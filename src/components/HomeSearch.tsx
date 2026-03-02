@@ -213,7 +213,7 @@ export function HomeSearch() {
     ];
   }, [apps]);
 
-  const NEW_APP_IDS = ["aleksobot", "vpndirectbot", "boxyvpn_bot", "QuizariumBot", "ChessContestBot", "durakru_bot", "TrueMafiaBot", "gpt3_unlim_chatbot", "lootmeme_bot", "lootglide_bot"];
+  const NEW_APP_IDS = ["ClashRoyaleimpostorbot", "aleksobot", "vpndirectbot", "boxyvpn_bot", "QuizariumBot", "ChessContestBot", "durakru_bot", "TrueMafiaBot", "gpt3_unlim_chatbot", "lootmeme_bot", "lootglide_bot"];
 
   const newApps = useMemo(() => {
     return NEW_APP_IDS
@@ -685,6 +685,23 @@ export function HomeSearch() {
           </div>
         </div>
 
+        <Link
+          href="/app/ClashRoyaleimpostorbot"
+          className="relative w-full max-w-[calc(100%-2.5rem)] mt-8 mx-5 overflow-hidden rounded-2xl block"
+          onClick={() => hapticFeedback("light")}
+        >
+          <img
+            src="/spy-banner.png"
+            alt="Игра в Шпиона"
+            className="w-full h-auto object-cover block"
+          />
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent px-5 py-4">
+            <div className="flex items-center justify-between">
+              <span className="text-white font-semibold text-[17px]">Перейти</span>
+              <ChevronRight className="text-white" size={24} strokeWidth={2} />
+            </div>
+          </div>
+        </Link>
         <div className="w-full max-w-[calc(100%-2.5rem)] mt-6 mx-5 overflow-hidden rounded-2xl bg-white/40 dark:bg-gray-800/40 backdrop-blur-md border border-white/30 dark:border-gray-600/30 box-border">
           <img
             src="/nft-banner.png"
