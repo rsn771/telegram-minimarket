@@ -11,7 +11,7 @@ const API_URL = TELEGRAM_TOKEN
 // Получатели заявок
 const OWNER_IDS = [5651149188, 728379071];
 
-const START_TEXT = `Добро пожаловать в MRKT — маркет лучших Telegram-приложений 🚀
+const START_TEXT = `Добро пожаловать в Market MiniApp — маркет лучших Telegram-приложений 🚀
 
 Здесь собраны проверенные боты и мини-аппы:
 • Нейросети и AI-инструменты

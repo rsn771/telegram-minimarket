@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const START_MESSAGE = `Добро пожаловать в MRKT — маркет лучших Telegram-приложений 🚀
+const START_MESSAGE = `Добро пожаловать в Market MiniApp — маркет лучших Telegram-приложений 🚀
 
 Здесь собраны проверенные боты и мини-аппы:
 • Нейросети и AI-инструменты
@@ -63,5 +63,5 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET() {
-  return NextResponse.json({ ok: true, message: "MRKT webhook is active" });
+  return NextResponse.json({ ok: true, message: "Market MiniApp webhook is active" });
 }
