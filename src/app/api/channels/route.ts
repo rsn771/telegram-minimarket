@@ -38,7 +38,13 @@ function parseScreenshots(screenshotsPath: string | null): string[] {
     .split(";")
     .map((s) => s.trim())
     .filter(Boolean)
-    .map((f) => (base ? base + encodeURIComponent(f) : `/api/static?file=${encodeURIComponent(f)}`));
+    .map((f) =>
+      f.startsWith("http://") || f.startsWith("https://")
+        ? f
+        : base
+          ? base + encodeURIComponent(f)
+          : `/api/static?file=${encodeURIComponent(f)}`
+    );
 }
 
 type ChannelRow = {

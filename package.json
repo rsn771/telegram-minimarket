@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "upload-assets": "node --env-file=.env.local scripts/upload-assets-to-blob.mjs"
+    "upload-assets": "node --env-file=.env.local scripts/upload-assets-to-blob.mjs",
+    "parse-appss": "node scripts/parse-appss.mjs"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2",

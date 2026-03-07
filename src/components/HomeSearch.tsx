@@ -222,7 +222,7 @@ export function HomeSearch() {
   }, [apps]);
 
   const appOfTheDay = useMemo(() => {
-    return apps.find((a) => a.id === "notspybot");
+    return apps.find((a) => a.id === "make_selfie_bot");
   }, [apps]);
 
   const recentlyViewedApps = useMemo(() => {
@@ -277,8 +277,11 @@ export function HomeSearch() {
 
   const TOP_CHARTS_VISIBLE = 4;
 
-  // Жёстко заданный порядок топ‑чартов
+  // Жёстко заданный порядок топ‑чартов (первые 4 видимы, остальные скрыты)
   const TOP_CHARTS_ORDER = [
+    "Mira",
+    "Syntx AI",
+    "Collage",
     "not spy bot",
     "rsn bot | чеки и переводы",
     "notcoin",
@@ -286,6 +289,10 @@ export function HomeSearch() {
     "major",
     "gigachat",
     "random beast",
+    "Toncast",
+    "Fomo Fighters",
+    "Glance Game",
+    "ChatGalaTon",
   ];
 
   // Приложения под вторым баннером (NFT подарки)
