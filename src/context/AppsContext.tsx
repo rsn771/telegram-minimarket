@@ -13,6 +13,7 @@ export type AppItem = {
   shortDescription?: string;
   screenshots?: string[];
   isVerified?: boolean;
+  mau?: number;
 };
 
 type AppsContextType = {
@@ -28,7 +29,7 @@ const AppsContext = createContext<AppsContextType | null>(null);
 async function fetchApps(): Promise<AppItem[]> {
   try {
     const res = await fetch("/api/channels", {
-      cache: "no-store", // Отключаем кеширование для получения актуальных данных
+      cache: "no-store",
     });
     
     if (!res.ok) {
@@ -63,6 +64,7 @@ async function fetchApps(): Promise<AppItem[]> {
         shortDescription?: string;
         screenshots?: string[];
         isVerified?: boolean;
+        mau?: number;
       }) => ({
         id: c.id,
         name: c.name,
@@ -74,6 +76,7 @@ async function fetchApps(): Promise<AppItem[]> {
         shortDescription: c.shortDescription,
         screenshots: c.screenshots,
         isVerified: c.isVerified,
+        mau: c.mau,
       })
     );
   } catch (error) {

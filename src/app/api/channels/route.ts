@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import path from "path";
 import fs from "fs";
 import Database from "better-sqlite3";
-import { neon } from "@neondatabase/serverless";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -24,8 +23,11 @@ const ASSETS_BASE = IS_DEV
      process.env.BLOB_STORE_URL ??
      "https://raw.githubusercontent.com/rsn771/telegram-minimarket/main/database/logo%26screens/");
 
-function getIconUrl(icon: string | null): string {
+const VPN_PLACEHOLDER_ICON = "/vpn-placeholder.svg";
+
+function getIconUrl(icon: string | null, id?: string): string {
   if (!icon) return "https://api.dicebear.com/7.x/shapes/svg?seed=default";
+  if (icon.includes("cdn.example.com")) return VPN_PLACEHOLDER_ICON;
   if (icon.startsWith("http://") || icon.startsWith("https://")) return icon;
   if (ASSETS_BASE) return ASSETS_BASE + encodeURIComponent(icon);
   return `/api/static?file=${encodeURIComponent(icon)}`;
@@ -58,6 +60,7 @@ type ChannelRow = {
   category?: string;
   screenshots_path?: string;
   short_description?: string;
+  mau?: number | null;
 };
 
 function ensureDbExists(): void {
@@ -99,6 +102,9 @@ function ensureColumns(db: InstanceType<typeof Database>): void {
   if (!names.has("short_description")) {
     db.prepare("ALTER TABLE channels ADD COLUMN short_description TEXT DEFAULT ''").run();
   }
+  if (!names.has("mau")) {
+    db.prepare("ALTER TABLE channels ADD COLUMN mau INTEGER").run();
+  }
 }
 
 // Получение средних рейтингов из отзывов
@@ -108,7 +114,7 @@ async function getAverageRatings(): Promise<Map<string, number>> {
   try {
     if (USE_POSTGRES && DATABASE_URL) {
       // Получаем рейтинги из Postgres (Vercel)
-      const sql = neon(DATABASE_URL);
+      const { neon } = await import("@neondatabase/serverless"); const sql = neon(DATABASE_URL);
       const rows = await sql`
         SELECT idminiapp, AVG(rating)::float as avg_rating
         FROM reviews
@@ -163,6 +169,7 @@ function getSelectCols(db: InstanceType<typeof Database>): string {
     "category",
     "screenshots_path",
     "short_description",
+    "mau",
   ];
   return wanted.filter((col) => existing.has(col)).join(", ");
 }
@@ -178,19 +185,21 @@ function toChannel(row: ChannelRow, ratingsMap?: Map<string, number>): {
   isVerified: boolean;
   screenshots: string[];
   shortDescription: string;
+  mau?: number | null;
 } {
   const reviewRating = ratingsMap?.get(row.idminiapp);
   return {
     id: String(row.idminiapp),
     name: row.title,
     category: row.category ?? "Утилиты",
-    icon: getIconUrl(row.icon),
+    icon: getIconUrl(row.icon, row.idminiapp),
     url: row.url ?? "",
     description: row.description ?? "",
     rating: reviewRating ?? (Number(row.rating) || 0),
     isVerified: Boolean(row.is_verified),
     screenshots: parseScreenshots(row.screenshots_path ?? null),
     shortDescription: row.short_description ?? "",
+    mau: row.mau != null && Number(row.mau) > 0 ? Number(row.mau) : undefined,
   };
 }
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useRef, useEffect } from "react";
-import { Search, X, ChevronRight, Star, Eye, Send, GraduationCap, Wand2, Bitcoin, Sparkles } from "lucide-react";
+import { Search, X, ChevronRight, Star, Eye, Send, GraduationCap, Wand2, Bitcoin, Sparkles, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { AppCard } from "@/components/AppCard";
 import { AppIcon } from "@/components/AppIcon";
@@ -33,29 +33,32 @@ function filterApps(apps: AppItem[], query: string): AppItem[] {
 
 const STORAGE_KEY = "home-expand-v2";
 const SCROLL_KEY = "home-scroll";
+const VPN_VISIBLE = 4;
 
-function loadExpanded(): { topCharts: boolean; neural: boolean; games: boolean } {
-  if (typeof window === "undefined") return { topCharts: false, neural: false, games: false };
+function loadExpanded(): { topCharts: boolean; neural: boolean; games: boolean; vpn: boolean } {
+  if (typeof window === "undefined") return { topCharts: false, neural: false, games: false, vpn: false };
   try {
     const raw = sessionStorage.getItem(STORAGE_KEY);
     if (raw) {
-      const parsed = JSON.parse(raw) as { topCharts?: boolean; neural?: boolean; games?: boolean };
+      const parsed = JSON.parse(raw) as { topCharts?: boolean; neural?: boolean; games?: boolean; vpn?: boolean };
       return {
         topCharts: !!parsed.topCharts,
         neural: !!parsed.neural,
         games: !!parsed.games,
+        vpn: !!parsed.vpn,
       };
     }
   } catch {
     // ignore
   }
-  return { topCharts: false, neural: false, games: false };
+  return { topCharts: false, neural: false, games: false, vpn: false };
 }
 
-function saveExpanded(expanded: { topCharts: boolean; neural: boolean; games: boolean }) {
+function saveExpanded(expanded?: { topCharts?: boolean; neural?: boolean; games?: boolean; vpn?: boolean }) {
   if (typeof window === "undefined") return;
   try {
-    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(expanded));
+    const prev = loadExpanded();
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ ...prev, ...expanded }));
   } catch {
     // ignore
   }
@@ -69,6 +72,7 @@ export function HomeSearch() {
   const [showAllTopCharts, setShowAllTopCharts] = useState(false);
   const [showAllNeural, setShowAllNeural] = useState(false);
   const [showAllGames, setShowAllGames] = useState(false);
+  const [showAllVpn, setShowAllVpn] = useState(false);
   const [categoryModalSlug, setCategoryModalSlug] = useState<string | null>(null);
   const [rixonBlurred, setRixonBlurred] = useState(false);
   const [recentlyViewedIds, setRecentlyViewedIds] = useState<string[]>([]);
@@ -83,6 +87,7 @@ export function HomeSearch() {
     setShowAllTopCharts(saved.topCharts);
     setShowAllNeural(saved.neural);
     setShowAllGames(saved.games);
+    setShowAllVpn(!!saved.vpn);
   }, []);
 
   useEffect(() => {
@@ -141,7 +146,7 @@ export function HomeSearch() {
       window.scrollTo(0, y);
     });
     return () => cancelAnimationFrame(id);
-  }, [showAllTopCharts, showAllNeural, showAllGames]);
+  }, [showAllTopCharts, showAllNeural, showAllGames, showAllVpn]);
 
   useEffect(() => {
     if (!rixonBannerRef.current) return;
@@ -174,6 +179,9 @@ export function HomeSearch() {
   const matches = useMemo(() => filterApps(apps, query), [apps, query]);
   const hasQuery = query.trim().length > 0;
 
+  const vpnApps = useMemo(() => apps.filter((a) => a.category === "VPN"), [apps]);
+
+
   const vpnCardIcons = useMemo(() => {
     const find = (q: string) => apps.find((a) => a.name.toLowerCase().includes(q));
     return [
@@ -191,6 +199,8 @@ export function HomeSearch() {
       { name: "Void", app: find("void") },
       { name: "Boinker", app: find("boinker") },
       { name: "Allgames", app: find("allgames") },
+      { name: "Fomo Fighters", app: find("fomo fighters") },
+      { name: "Glance Game", app: find("glance game") },
     ];
   }, [apps]);
 
@@ -210,6 +220,9 @@ export function HomeSearch() {
       { name: "ChatGPT 5 | Gemini 3", app: find("gemini 3") },
       { name: "GigaChat", app: find("gigachat") },
       { name: "GPT-4 Unlimited", app: find("gpt-4 unlimited") },
+      { name: "Mira", app: find("mira") },
+      { name: "Syntx AI", app: find("syntx") },
+      { name: "Collage", app: find("collage") },
     ];
   }, [apps]);
 
@@ -236,7 +249,7 @@ export function HomeSearch() {
     { slug: "spy", title: "Шпион", icon: Eye, gradient: "from-slate-700 to-slate-900", iconColor: "text-slate-300", appIds: ["notspybot", "41", "sherlok_bot", "25"] },
     { slug: "tgk", title: "Для своего ТГК", icon: Send, gradient: "from-sky-400 to-blue-600", iconColor: "text-sky-100", appIds: ["6", "anonaskbot", "anonimnyye_voprosy_bot", "box14bot", "22"] },
     { slug: "study", title: "Учёба", icon: GraduationCap, gradient: "from-emerald-400 to-green-600", iconColor: "text-emerald-100", appIds: ["chatgpt_gpt4bot", "GPT4Telegrambot", "4", "13", "15", "clips_robot", "iqcoinapp_bot"] },
-    { slug: "generation", title: "Генерация", icon: Wand2, gradient: "from-violet-500 to-purple-700", iconColor: "text-violet-100", appIds: ["chatgpt_gpt4bot", "GPT4Telegrambot", "4", "gpt3_unlim_chatbot", "aleksobot", "40", "trendiobot"] },
+    { slug: "generation", title: "Генерация", icon: Wand2, gradient: "from-violet-500 to-purple-700", iconColor: "text-violet-100", appIds: ["chatgpt_gpt4bot", "GPT4Telegrambot", "4", "gpt3_unlim_chatbot", "aleksobot", "40", "trendiobot", "mira", "syntxaibot", "collage"] },
     { slug: "crypto", title: "Криптоинвестор", icon: Bitcoin, gradient: "from-orange-400 to-yellow-500", iconColor: "text-orange-100", appIds: ["21", "11", "3", "1", "30"] },
   ], []);
 
@@ -352,14 +365,49 @@ export function HomeSearch() {
   const visibleNftGiftsApps = showAllNeural ? nftGiftsApps : nftGiftsApps.slice(0, TOP_CHARTS_VISIBLE);
   const visibleProbivApps = showAllGames ? probivApps : probivApps.slice(0, TOP_CHARTS_VISIBLE);
 
-  const persistExpand = (updates: { topCharts?: boolean; neural?: boolean; games?: boolean }) => {
+  const persistExpand = (updates: { topCharts?: boolean; neural?: boolean; games?: boolean; vpn?: boolean }) => {
     const next = {
       topCharts: updates.topCharts ?? showAllTopCharts,
       neural: updates.neural ?? showAllNeural,
       games: updates.games ?? showAllGames,
+      vpn: updates.vpn ?? showAllVpn,
     };
     saveExpanded(next);
   };
+
+  const vpnListUnderBanner = useMemo(() => {
+    const oldApps = vpnCardIcons.map((c) => c.app).filter(Boolean) as AppItem[];
+    const oldIds = new Set(oldApps.map((a) => a.id));
+    const newApps = vpnApps.filter((a) => !oldIds.has(a.id));
+    return [...oldApps, ...newApps];
+  }, [vpnCardIcons, vpnApps]);
+  const visibleVpnApps = showAllVpn ? vpnListUnderBanner : vpnListUnderBanner.slice(0, VPN_VISIBLE);
+  const hiddenVpnCount = Math.max(0, vpnListUnderBanner.length - VPN_VISIBLE);
+  const popularNotShownApps = useMemo(() => {
+    const shownIds = new Set<string>();
+    if (appOfTheDay) shownIds.add(appOfTheDay.id);
+    NEW_APP_IDS.forEach((id) => shownIds.add(id));
+    recentlyViewedIds.forEach((id) => shownIds.add(id));
+    topChartsApps.forEach((a) => shownIds.add(a.id));
+    vpnCardIcons.forEach((c) => c.app && shownIds.add(c.app.id));
+    gamesCardIcons.forEach((c) => c.app && shownIds.add(c.app.id));
+    probivCardIcons.forEach((c) => c.app && shownIds.add(c.app.id));
+    neuroCardIcons.forEach((c) => c.app && shownIds.add(c.app.id));
+    vpnListUnderBanner.forEach((a) => shownIds.add(a.id));
+    nftGiftsApps.forEach((a) => shownIds.add(a.id));
+    probivApps.forEach((a) => shownIds.add(a.id));
+    ['TrueMafiaBot','durakru_bot','14','ChessContestBot','QuizariumBot','26','aleksobot'].forEach((id) => shownIds.add(id));
+    return apps
+      .filter((a) => !shownIds.has(a.id))
+      .sort((a, b) => {
+        const mauA = a.mau ?? 0;
+        const mauB = b.mau ?? 0;
+        if (mauB !== mauA) return mauB - mauA;
+        return (b.rating ?? 0) - (a.rating ?? 0);
+      })
+      .slice(0, 16);
+  }, [apps, appOfTheDay, recentlyViewedIds, topChartsApps, vpnCardIcons, gamesCardIcons, probivCardIcons, neuroCardIcons, vpnListUnderBanner, nftGiftsApps, probivApps]);
+
 
   return (
     <div className="min-h-screen pb-24 bg-transparent">
@@ -790,13 +838,31 @@ export function HomeSearch() {
         />
       </div>
 
-      {vpnCardIcons.length > 0 && (
+      {vpnListUnderBanner.length > 0 && (
         <section className="mt-4">
           <div className="flex flex-col">
-            {vpnCardIcons.map((item) => item.app && (
-              <AppCard key={item.app.id} app={item.app} />
+            {visibleVpnApps.map((app) => (
+              <AppCard key={app.id} app={app} />
             ))}
           </div>
+          {hiddenVpnCount > 0 && (
+            <div className="px-5 mt-3">
+              <button
+                type="button"
+                onClick={() => {
+                  hapticFeedback("light");
+                  setShowAllVpn((prev) => {
+                    const next = !prev;
+                    persistExpand({ vpn: next });
+                    return next;
+                  });
+                }}
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-white/40 dark:bg-gray-700/40 text-[#007AFF] font-semibold text-[15px] active:opacity-70 transition-colors border border-white/40 dark:border-gray-600/40"
+              >
+                {showAllVpn ? "Скрыть" : `Показать все (${hiddenVpnCount})`}
+              </button>
+            </div>
+          )}
         </section>
       )}
 
@@ -858,6 +924,20 @@ export function HomeSearch() {
         />
       </Link>
 
+      {popularNotShownApps.length > 0 && (
+        <section className="mt-8">
+          <div className="flex items-center gap-2 px-5 mb-4">
+            <TrendingUp size={20} className="text-[#007AFF]" />
+            <h2 className="text-[22px] font-bold text-black dark:text-white">Популярное</h2>
+          </div>
+          <div className="flex flex-col">
+            {popularNotShownApps.map((app) => (
+              <AppCard key={app.id} app={app} />
+            ))}
+          </div>
+        </section>
+      )}
+
       <p className="mt-10 mb-6 mx-auto px-4 max-w-[36rem] text-center text-[13px] leading-relaxed text-gray-600 dark:text-gray-400">
         Наш маркет помогает вам находить лучшие сервисы в Telegram. Мы заботливо собираем их в одном месте, но важно помнить: каждое приложение создано независимыми разработчиками. Мы не присваиваем себе авторство сторонних проектов и не можем гарантировать их бесперебойную работу. Мы не занимаемся пропагандой каких-либо идей, товаров или взглядов — наш сервис носит исключительно информационный характер. Пользуйтесь с удовольствием, но будьте бдительны!
       </p>
@@ -897,7 +977,7 @@ export function HomeSearch() {
               {(() => {
                 const modalApps =
                   categoryModalSlug === "vpn"
-                    ? vpnCardIcons.map((c) => c.app).filter(Boolean) as AppItem[]
+                     ? vpnCardIcons.map((c) => c.app).filter(Boolean) as AppItem[]
                     : categoryModalSlug === "games"
                     ? gamesCardIcons.map((c) => c.app).filter(Boolean) as AppItem[]
                     : categoryModalSlug === "probiv"

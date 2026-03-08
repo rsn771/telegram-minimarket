@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Star, Plus } from "lucide-react";
+import { Star, Plus, Users } from "lucide-react";
 import Link from "next/link";
 import { hapticFeedback } from "@/utils/telegram";
 import { useMyApps } from "@/context/MyAppsContext";
@@ -63,9 +63,19 @@ export const AppCard = ({ app, openDirectly = false }: { app: AppItem; openDirec
           <p className="text-gray-500 dark:text-gray-400 text-[14px] mt-0.5 line-clamp-2 break-words overflow-hidden">
             {(app.shortDescription?.trim() || app.description?.trim() || "").slice(0, 280)}
           </p>
-          <div className="flex items-center gap-1 mt-1">
-            <Star size={10} className="fill-gray-400 stroke-none" />
-            <span className="text-[12px] text-gray-400 font-bold">{Number(app.rating).toFixed(1)}</span>
+          <div className="flex items-center gap-3 mt-1 flex-wrap">
+            <div className="flex items-center gap-1">
+              <Star size={10} className="fill-gray-400 stroke-none" />
+              <span className="text-[12px] text-gray-400 font-bold">{Number(app.rating).toFixed(1)}</span>
+            </div>
+            {app.mau != null && app.mau > 0 && (
+              <div className="flex items-center gap-1" title="Пользователей в месяц">
+                <Users size={10} className="text-gray-400 stroke-[2]" />
+                <span className="text-[12px] text-gray-400 font-medium">
+                  {app.mau >= 1_000_000 ? `${(app.mau / 1_000_000).toFixed(1)}M` : app.mau >= 1_000 ? `${Math.round(app.mau / 1_000)}K` : app.mau}
+                </span>
+              </div>
+            )}
           </div>
         </div>
       </Link>

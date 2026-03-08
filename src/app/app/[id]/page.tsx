@@ -2,7 +2,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft, ChevronDown, ChevronUp, Star, ShieldCheck, Plus, Share2 } from "lucide-react";
+import { ChevronLeft, ChevronDown, ChevronUp, Star, Users, Check, Plus, Share2 } from "lucide-react";
 import { hapticFeedback } from "@/utils/telegram";
 import { useApps, type AppItem } from "@/context/AppsContext";
 import { useMyApps } from "@/context/MyAppsContext";
@@ -351,10 +351,24 @@ export default function AppDetail() {
           </div>
           <div className="w-[1px] bg-gray-200 dark:bg-gray-600 h-8 self-center"></div>
           <div className="text-center flex-1 px-2">
-            <p className="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase mb-1">Безопасность</p>
-            <p className="text-[20px] font-black text-gray-700 dark:text-gray-200 flex justify-center">
-              {app.isVerified ? <ShieldCheck className="text-green-500" /> : <ShieldCheck className="text-gray-400 dark:text-gray-500" />}
-            </p>
+            {app.mau != null && app.mau > 0 ? (
+              <>
+                <p className="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase mb-1">Пользователей в месяц</p>
+                <p className="text-[20px] font-black text-gray-700 dark:text-gray-200 flex items-center gap-1 justify-center">
+                  <Users size={16} className="text-gray-500 dark:text-gray-400" />
+                  {app.mau >= 1000000
+                    ? (app.mau / 1000000).toFixed(1) + "M"
+                    : app.mau >= 1000
+                      ? Math.round(app.mau / 1000) + "K"
+                      : String(app.mau)}
+                </p>
+              </>
+            ) : (
+              <p className="text-[14px] font-medium text-gray-500 dark:text-gray-400 flex items-center gap-1.5 justify-center pt-2">
+                <Check size={16} className="text-green-500/80 dark:text-green-400/80 stroke-[2.5]" />
+                <span>проверено</span>
+              </p>
+            )}
           </div>
         </div>
       </div>
